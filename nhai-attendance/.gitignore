@@ -1,0 +1,96 @@
+# ─── NHAI HACKATHON PROJECT ───────────────────────────────────────────────────
+# Maintained for: NHAI Hackathon 7.0
+# React Native CLI + TypeScript
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─── NODE ─────────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.yarn/
+
+# ─── REACT NATIVE ─────────────────────────────────────────────────────────────
+# Metro bundler cache
+.metro-health-check*
+.metro_bundler_cache/
+
+# React Native build outputs
+/android/build/
+/android/app/build/
+/android/.gradle/
+/android/local.properties
+/android/captures/
+/android/.idea/
+
+/ios/build/
+/ios/Pods/
+/ios/*.xcworkspace/xcuserdata/
+/ios/DerivedData/
+
+# React Native generated files
+/android/app/src/main/assets/index.android.bundle
+/android/app/src/main/assets/index.android.bundle.map
+/ios/main.jsbundle
+
+# ─── ENVIRONMENT AND SECRETS ──────────────────────────────────────────────────
+# NEVER commit real environment files
+.env
+.env.development
+.env.production
+.env.staging
+.env.local
+
+# Android signing keys — NEVER commit these
+android/app/release.keystore
+android/app/*.keystore
+*.jks
+
+# AWS credentials — NEVER commit these
+.aws/
+aws/credentials
+aws/samconfig.toml
+
+# ─── AI MODEL FILES ───────────────────────────────────────────────────────────
+# TFLite model files are large binaries — downloaded via scripts/download-models.sh
+src/assets/models/*.tflite
+src/assets/models/*.bin
+
+# ─── EDITOR AND OS ────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── TYPESCRIPT ───────────────────────────────────────────────────────────────
+*.tsbuildinfo
+dist/
+build/
+
+# ─── TESTING ──────────────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+jest_html_reporters_temp_data.json
+
+# ─── LOGS ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── TEMPORARY FILES ──────────────────────────────────────────────────────────
+*.tmp
+*.temp
+*.bak
+*.orig
+submission_package/
+/tmp/
+
+# ─── WATCHMAN ─────────────────────────────────────────────────────────────────
+.watchman-cookie-*

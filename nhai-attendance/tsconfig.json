@@ -1,0 +1,74 @@
+{
+  "compilerOptions": {
+    // Target ES2020 for modern JS features while maintaining broad device compatibility
+    "target": "ES2020",
+    // Use React Native's bundler (Metro) — do not use CommonJS or ESM directly
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    // Enable JSX for React Native
+    "jsx": "react-native",
+    // Strict mode enables: noImplicitAny, strictNullChecks, strictFunctionTypes,
+    // strictBindCallApply, strictPropertyInitialization, noImplicitThis, alwaysStrict
+    "strict": true,
+    // Additional strictness rules
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": false,
+    "types": ["node"],
+    // Allow importing .json files as modules
+    "resolveJsonModule": true,
+    // Allow default imports from modules without default exports (required by some RN libs)
+    "allowSyntheticDefaultImports": true,
+    // Allow importing CommonJS modules as default imports
+    "esModuleInterop": true,
+    // Skip type checking of declaration files in node_modules for build performance
+    "skipLibCheck": true,
+    // Ensure file name casing is consistent — prevents issues between macOS (case-insensitive)
+    // and Linux (case-sensitive) file systems in CI environments
+    "forceConsistentCasingInFileNames": true,
+    // Do not emit compiled output — Metro handles transpilation
+    "noEmit": true,
+    // Allow importing JS files alongside TS (needed for some RN internals)
+    "allowJs": true,
+    // Preserve JSX for Metro to handle
+    "isolatedModules": true,
+    // Path aliases — allows '@/components/Button' instead of '../../../components/Button'
+    // Metro must also be configured to respect these aliases (see babel.config.js)
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@screens/*": ["src/screens/*"],
+      "@navigation/*": ["src/navigation/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@services/*": ["src/services/*"],
+      "@store/*": ["src/store/*"],
+      "@ml/*": ["src/ml/*"],
+      "@db/*": ["src/db/*"],
+      "@utils/*": ["src/utils/*"],
+      "@constants/*": ["src/constants/*"],
+      "@types/*": ["src/types/*"],
+      "@theme/*": ["src/theme/*"],
+      "@api/*": ["src/api/*"],
+      "@assets/*": ["src/assets/*"]
+    },
+    // Include React Native type definitions
+    "types": ["react-native", "jest"],
+    "lib": ["ES2020", "DOM"]
+  },
+  "include": [
+    "src/**/*",
+    "App.tsx",
+    "__tests__/**/*",
+    "index.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "android",
+    "ios",
+    "babel.config.js",
+    "metro.config.js",
+    "jest.config.js"
+  ]
+}

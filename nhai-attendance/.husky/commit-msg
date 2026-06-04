@@ -1,0 +1,5 @@
+#!/bin/sh
+# commit-msg hook — runs commitlint to enforce Conventional Commits.
+# See .commitlintrc.js for the full rule configuration.
+
+npx --no -- commitlint --edit "$1"

@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  NHAI Hackathon System — Serverless Sync Backend
+  Provides API Gateway + Lambda functions for attendance record sync.
+  This template exists for architecture demonstration and hackathon evaluation.
+  For prototype use, the app runs with MockSyncService (no deployment needed).
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs18.x
+    MemorySize: 256
+    Environment:
+      Variables:
+        DYNAMODB_TABLE: !Ref AttendanceTable
+        STAGE: !Ref Stage
+
+Parameters:
+  Stage:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+
+Resources:
+  # ─── API GATEWAY ──────────────────────────────────────────────────────────────
+  AttendanceApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub nhai-hackathon-project-api-${Stage}
+      StageName: !Ref Stage
+      Cors:
+        AllowMethods: "'POST,GET,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Api-Key,Authorization'"
+        AllowOrigin: "'*'"
+
+  # ─── LAMBDA FUNCTIONS ────────────────────────────────────────────────────────
+  SyncFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/sync/
+      Handler: index.handler
+      Description: Receives batch sync payloads from mobile devices
+      Events:
+        SyncApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AttendanceApi
+            Path: /sync
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AttendanceTable
+
+  StatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/status/
+      Handler: index.handler
+      Description: Health check endpoint for sync service
+      Events:
+        StatusApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AttendanceApi
+            Path: /status
+            Method: get
+
+  GetAttendanceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/getAttendance/
+      Handler: index.handler
+      Description: Retrieves attendance records for a worksite
+      Events:
+        GetAttendanceApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AttendanceApi
+            Path: /attendance/{worksiteId}
+            Method: get
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref AttendanceTable
+
+  # ─── DYNAMODB TABLE ───────────────────────────────────────────────────────────
+  AttendanceTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub nhai-hackathon-project-${Stage}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+        - AttributeName: worksiteId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: WorksiteIndex
+          KeySchema:
+            - AttributeName: worksiteId
+              KeyType: HASH
+            - AttributeName: sk
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${AttendanceApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}
+  SyncFunctionArn:
+    Description: Sync Lambda Function ARN
+    Value: !GetAtt SyncFunction.Arn
+  AttendanceTableName:
+    Description: DynamoDB table name
+    Value: !Ref AttendanceTable
