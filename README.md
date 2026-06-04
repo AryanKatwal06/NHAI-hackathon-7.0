@@ -28,11 +28,6 @@ Premium, production-ready offline attendance system for remote NHAI field sites,
 - [Performance & Scaling](#performance--scaling)
 - [Security & Best Practices](#security--best-practices)
 - [Datalake 3.0 Integration](#datalake-30-integration)
-- [Screenshots](#screenshots)
-- [Future Improvements](#future-improvements)
-- [Contributing](#contributing)
-- [License](#license)
-- [Author](#author)
 
 ---
 
