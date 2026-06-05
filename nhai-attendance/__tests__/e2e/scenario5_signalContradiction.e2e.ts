@@ -68,7 +68,7 @@ describe('Scenario 5: Signal Contradiction Detection', () => {
   it('should sync the flagged record', async () => {
     // Navigate to PendingSyncScreen
     // Tap "Sync Now" (testID: "sync-now-btn")
-    // Verify mock sync completes (demo mode)
+    // Verify offline sync queue completes (offline mode)
     // Verify sync result shows "X records synced"
     // The flagged record with contradiction should be prioritized
   });

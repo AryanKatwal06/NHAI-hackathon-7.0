@@ -20,6 +20,10 @@ jest.mock('../../src/db/repositories/authRecords.repository', () => ({
 jest.mock('../../src/db/repositories/syncQueue.repository', () => ({
   enqueue: jest.fn().mockResolvedValue('queue_id'),
 }));
+jest.mock('../../src/db/repositories/workers.repository', () => ({
+  findWorkerByEmployeeId: jest.fn().mockResolvedValue({ id: 'db_worker_id' }),
+  createWorker: jest.fn().mockResolvedValue({ id: 'db_worker_id' })
+}));
 jest.mock('../../src/db/repositories/auditLogs.repository', () => ({
   logEvent: jest.fn().mockResolvedValue(true),
 }));

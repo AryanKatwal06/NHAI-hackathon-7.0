@@ -6,7 +6,7 @@ import Config from 'react-native-config';
 
 // ─── DATABASE ─────────────────────────────────────────────────────────────────
 // SQLite database filename. Stored in the app's private documents directory.
-export const DB_NAME = Config.DB_NAME ?? 'nhai_hackathon.db';
+export const DB_NAME = Config.DB_NAME ?? 'nhai_field attendance.db';
 
 // Database version — used by the migration system to determine which
 // migrations need to run. Increment when adding new migrations.

@@ -4,7 +4,7 @@
 -->
 
 [![React Native](https://img.shields.io/badge/React_Native-0.75-blue.svg)]()
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)]()
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5.4-blue.svg)]()
 [![Platform](https://img.shields.io/badge/Platform-Android_|_iOS-brightgreen.svg)]()
 
 # NHAI Offline Multi-Signal Identity Verification

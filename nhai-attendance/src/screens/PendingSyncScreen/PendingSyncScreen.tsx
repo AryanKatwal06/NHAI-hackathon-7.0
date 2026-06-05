@@ -1,6 +1,6 @@
 /* eslint-disable */
 // PendingSyncScreen.tsx — Redesigned with sync status indicator,
-// progress animation, records list, and demo mode banner.
+// progress animation, records list, and offline mode banner.
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, StatusBar } from 'react-native';
@@ -15,6 +15,7 @@ import { useTheme } from '@theme/ThemeProvider';
 import { useAppAlert } from '@components/common/AppAlertProvider';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { AppNavigationProp } from '@navigation/types';
+import { rs } from '@utils/responsive.utils';
 
 interface QueueItem {
   id: string;
@@ -65,7 +66,7 @@ const PendingSyncScreen: React.FC = () => {
     }
     return {
       dot: colors.signal.liveness,
-      text: 'Ready to sync (Demo Mode)',
+      text: 'Ready to sync (Offline Mode)',
       bg: `${colors.signal.liveness}15`,
     };
   };
@@ -117,14 +118,14 @@ const PendingSyncScreen: React.FC = () => {
         </View>
       </GlassCard>
 
-      {/* Demo mode banner */}
+      {/* Offline mode banner */}
       <GlassCard
         style={{ borderColor: colors.signal.liveness, borderWidth: 1, marginTop: spacing.sm }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs, paddingHorizontal: spacing.sm }}>
           <Icon name="bell-outline" size={16} color={colors.signal.liveness} />
-          <Text style={{ color: colors.signal.liveness, fontSize: fontSize.sm, textAlign: 'center', flexShrink: 1 }}>
-            Demo Mode: Using simulated sync. Configure AWS_API_GATEWAY_URL for live sync.
+          <Text numberOfLines={1} style={{ color: colors.signal.liveness, fontSize: fontSize.sm, textAlign: 'center', flexShrink: 1 }}>
+            Offline Mode: Using simulated sync. Configure AWS_API_GATEWAY_URL for live sync.
           </Text>
         </View>
       </GlassCard>
@@ -166,6 +167,7 @@ const PendingSyncScreen: React.FC = () => {
           fullWidth
           size="large"
           testID="sync-now-btn"
+          style={{ height: rs(56), borderRadius: rs(12) }}
         />
       </View>
 
@@ -185,7 +187,7 @@ const PendingSyncScreen: React.FC = () => {
         data={records}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <GlassCard style={{ marginBottom: spacing.sm }}>
+          <GlassCard style={{ marginBottom: spacing.sm, paddingHorizontal: rs(16), paddingVertical: rs(12), minHeight: rs(64) }}>
             <View
               style={{
                 flexDirection: 'row',
@@ -243,15 +245,15 @@ const PendingSyncScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1, padding: rs(16) },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: rs(16),
   },
-  pulseDot: { width: 10, height: 10, borderRadius: 5 },
-  statusChip: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 100, borderWidth: 1 },
+  pulseDot: { width: rs(10), height: rs(10), borderRadius: rs(5) },
+  statusChip: { paddingHorizontal: rs(10), paddingVertical: rs(3), borderRadius: rs(100), borderWidth: 1 },
 });
 
 export default PendingSyncScreen;

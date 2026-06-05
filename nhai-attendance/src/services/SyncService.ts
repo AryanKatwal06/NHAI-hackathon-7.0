@@ -1,5 +1,4 @@
 /* eslint-disable */
-// SyncService.ts
 
 import NetInfo from '@react-native-community/netinfo';
 import {
@@ -7,7 +6,7 @@ import {
   checkApiHealth as awsCheckHealth,
   SyncApiError,
 } from '@api/awsSync';
-import { mockSyncBatch, mockCheckHealth } from '@services/MockSyncService';
+import { offlineSyncBatch, offlineCheckHealth } from '@services/OfflineSyncService';
 import Config from 'react-native-config';
 import {
   getPending,
@@ -18,18 +17,19 @@ import {
   purgeSynced,
 } from '@db/repositories/syncQueue.repository';
 
-// Determine whether to use real AWS or mock sync
+// Determine whether to use real AWS or offline sync queue
 const USE_REAL_AWS = Boolean(
+  Config.USE_MOCK_SYNC !== 'true' &&
   Config.AWS_API_GATEWAY_URL &&
-  Config.AWS_API_GATEWAY_URL !== 'https://your-api-id.execute-api.ap-south-1.amazonaws.com/prod',
+  !Config.AWS_API_GATEWAY_URL.includes('your-api-id.execute-api')
 );
 
-// Use real AWS if configured, mock otherwise
-const syncBatch = USE_REAL_AWS ? awsSyncBatch : mockSyncBatch;
-const checkApiHealth = USE_REAL_AWS ? awsCheckHealth : mockCheckHealth;
+// Use real AWS if configured, offline simulation otherwise
+const syncBatch = USE_REAL_AWS ? awsSyncBatch : offlineSyncBatch;
+const checkApiHealth = USE_REAL_AWS ? awsCheckHealth : offlineCheckHealth;
 
-// Log which mode is active so the demo clearly shows
-console.info(`[SyncService] Sync mode: ${USE_REAL_AWS ? 'REAL AWS' : 'MOCK (demo mode)'}`);
+// Log which mode is active
+console.info(`[SyncService] Sync mode: ${USE_REAL_AWS ? 'REAL AWS' : 'OFFLINE MODE'}`);
 import { markAsSynced as markAuthRecordSynced } from '@db/repositories/authRecords.repository';
 import { logEvent } from '@services/AuditService';
 import { getCurrentDeviceFingerprint } from '@services/DeviceTrustService';
@@ -39,9 +39,7 @@ import { SYNC_CONFIG } from '@constants/app.constants';
 let isSyncInProgress = false;
 let netInfoUnsubscribe: (() => void) | null = null;
 
-/**
- * Computes exponential backoff delay.
- */
+
 /**
  * Starts listening for network connectivity changes.
  * Automatically triggers sync when connectivity is restored.

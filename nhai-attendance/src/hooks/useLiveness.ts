@@ -1,4 +1,3 @@
-// useLiveness.ts
-// Custom hook for liveness challenge orchestration and result tracking.
-
-export {};
+export interface UseLiveness {
+  // Implementation pending
+}

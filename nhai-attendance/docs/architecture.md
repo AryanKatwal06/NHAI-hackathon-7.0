@@ -1,149 +1,63 @@
-# Architecture: NHAI Hackathon Multi-Signal Identity Framework
+# System Architecture & Trust Engine
 
-## Executive Summary
+The NHAI Field Attendance System operates entirely offline via a multi-tiered architecture that separates biometric inference, cryptographic security, and signal processing.
 
-The NHAI Hackathon framework provides a robust, fully offline, and sub-1-second identity verification system for highway construction workers. Its core innovation lies in its multi-signal trust scoring model, which evaluates five independent signals (Face Match, Liveness, Device Trust, Behavioral History, and Location) rather than relying solely on simplistic face matching. The system is designed to run entirely on mid-range Android devices without internet connectivity, utilizing a highly optimized <2MB MobileFaceNet ML model and an encrypted local SQLite database to achieve rapid authentication while maintaining rigorous security against spoofing and tampering.
+## 1. Multi-Signal Trust Score Engine
 
-## System Philosophy
+Authentication is NOT a binary pass/fail based solely on facial recognition. It calculates a holistic Trust Score (0–100) using five independent weighted signals. This ensures high resilience against targeted spoofing attacks.
 
-Traditional attendance systems often depend on a binary "does this face match?" question. However, this approach is vulnerable to sophisticated spoofing (photos, video replay) and proxy attacks (another worker using a registered device).
+### Signal Weighting
+The absolute contribution of each signal to the final score is strictly defined as follows:
 
-Instead, our philosophy asks: **"How confident are we that this authentication attempt is genuine?"**
+| Signal | Weight | Description |
+|--------|--------|-------------|
+| **Face Match** | 40% | Cosine similarity between the live camera feed and encrypted enrollment embedding. |
+| **Liveness** | 25% | Score derived from passing randomized, interactive anti-spoofing challenges (e.g., eye blink sequences). |
+| **Device Trust** | 15% | Hardware fingerprinting to verify the worker is using an authorized or previously used device. |
+| **Behavioral** | 10% | Circular statistical analysis of login times. Flags activity significantly deviating from the worker's historical norms. |
+| **Location** | 10% | Haversine distance verification ensuring the login occurs within the worksite geofence. |
 
-To answer this, we implemented a 7-factor trust model:
+*Total Possible Score: 100*
 
-- **Face Match Score:** Is it the same person?
-- **Liveness Score:** Is the person physically present? (Defends against photo/video replay spoofing)
-- **Device Trust Score:** Is this the expected enrolled device? (Defends against proxy attendance)
-- **Behavioral Score:** Does this login align with the worker's historical patterns?
-- **Location Score:** Is the device physically at the worksite?
-- **Signal Consensus:** Do these independent signals contradict one another?
-- **Explainability:** Why was the final trust decision made?
+### Decision Thresholds
+- **`AUTHENTICATED` (Score >= 80)**: Complete confidence. The worker is marked present locally and synced to the cloud.
+- **`FLAGGED` (Score >= 60 and < 80)**: Ambiguous confidence. The worker is allowed to proceed, but the record is flagged for supervisor review in the dashboard.
+- **`REJECTED` (Score < 60)**: Low confidence. The authentication fails immediately and is logged as an unauthorized attempt.
 
-By combining these independent factors into a weighted trust score, the system provides resilience against isolated points of failure and intelligent fallback when network or location services are unreliable.
+## 2. Signal Consensus Engine
 
-## Architecture Diagram
+In advanced attack scenarios (such as GPS spoofing combined with stolen biometric data), individual signal thresholds might not catch the anomaly if the total score remains high. 
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                  NHAI Hackathon App                    │
-│                   React Native CLI                      │
-├─────────────┬──────────────┬────────────────────────────┤
-│  ML Engine  │ Trust Engine │   Storage Layer            │
-│             │              │                            │
-│ MediaPipe   │ Face Score   │  SQLite (SQLCipher AES-256)│
-│ MobileFaceNet│ Liveness    │  8 Tables                  │
-│ TFLite      │ Device Score │  Repository Pattern        │
-│             │ Behavioral   │                            │
-│             │ Location     │                            │
-│             │ Consensus    │                            │
-│             │ Explainability│                           │
-├─────────────┴──────────────┴────────────────────────────┤
-│              Sync Layer (Offline Queue)                 │
-│   MockSyncService (demo) ←→ AWS SyncService (production)│
-│   API Gateway → Lambda → DynamoDB (Free Tier)           │
-└─────────────────────────────────────────────────────────┘
-```
+The **Signal Consensus Engine** runs *after* the initial score calculation to check for fundamental contradictions in the data.
 
-## Component Deep Dives
+### Exact Consensus Rules
+A "Contradiction" is triggered when:
+1. The **Face Match** signal is `HIGH_CONFIDENCE` (Score > 85).
+2. **AND** at least **1** other signal is categorized as `LOW_TRUST` (Score < 30).
 
-### Face Detection
+*Example Scenario:* A worker has a 95% Face Match and 100% Liveness, but is using an unrecognized device (Score: 20) and is outside the worksite (Score: 10). 
+- *Weighted Score:* ~70.5 (Normally `FLAGGED`)
+- *Consensus Rule Applied:* High Face Match + 2 Low Signals. The attempt is structurally contradictory (perfect biometrics, wrong place/device). 
+- *Result:* If the score was initially high enough to be `AUTHENTICATED`, the Consensus Engine overrides and forcibly downgrades it to `FLAGGED` due to the detected contradiction.
 
-Uses MediaPipe Face Mesh for robust, on-device face detection and landmarking. MediaPipe was chosen for its minimal latency and offline capabilities compared to cloud-based APIs like Google Vision.
+## 3. Offline Sync Queue Mechanism
 
-### Face Recognition
+Since field locations frequently experience zero connectivity, the application is fundamentally "Offline-First". 
 
-Leverages MobileFaceNet quantized to INT8 format via TensorFlow Lite. This reduces the model size from ~8MB down to <2MB while retaining 99%+ accuracy, enabling blazingly fast feature extraction (under 300ms) on resource-constrained devices.
+### Storage & Queueing
+1. When an authentication is completed, the metadata is written to the local SQLite database (`auth_records` table) for immediate rendering on the Supervisor Dashboard.
+2. Simultaneously, a data payload is generated and serialized into the `sync_queue` table. **Crucially, raw biometric data (images or embeddings) are NEVER included in the sync payload.** Only scalar scores and metadata are transmitted.
+3. The queue record is marked with an `id`, `status` (`PENDING`), and `retry_count` (0).
 
-### Liveness Detection
-
-To thwart static spoofing, the system utilizes an active liveness challenge system via MediaPipe Face Mesh. The worker must respond to randomized prompts (blink, smile, turn head), measured via Eye Aspect Ratio (EAR) and Mouth Aspect Ratio (MAR) heuristics, defeating replay attacks.
-
-### Device Trust
-
-Generates a persistent cryptographic fingerprint of the device hardware at enrollment. Subsequent authentications check this fingerprint to prevent proxy attendance (e.g., Worker B logging in for Worker A on an unknown device).
-
-### Behavioral Analysis
-
-Evaluates the worker's historical login cadence and anomaly detection (e.g., unexpected off-hours logins).
-
-### Location Verification
-
-Uses the Haversine formula to compute distance from the predefined worksite coordinates, providing confidence that the worker is physically on-site.
-
-### Signal Consensus (Consensus Engine)
-
-Examines the 5 generated signals for contradictions. For instance, a very high face match paired with failing liveness and low device trust signifies a likely spoofing attempt, downgrading the result from AUTHENTICATED to FLAGGED.
-
-### Trust Score Engine
-
-A weighted algorithm combining all 5 signals to generate a final deterministic score (0-100), avoiding brittle binary decisions.
-
-### Explainable Authentication
-
-Provides transparent reasoning for every trust decision. If a record is FLAGGED or REJECTED, the system logs human-readable context detailing exactly which signals fell below acceptable thresholds.
-
-### Offline Storage
-
-Built on SQLite encrypted with SQLCipher (AES-256). Adheres to the Repository Pattern to abstract database operations, ensuring zero biometric data or audit logs are stored in plaintext.
-
-## Data Flow Walkthrough
-
-1. **Camera Open:** React Native Vision Camera streams frames locally.
-2. **Detection & Liveness:** MediaPipe detects faces and issues randomized liveness challenges.
-3. **Inference:** Captured frame is preprocessed and fed to TFLite MobileFaceNet to extract a 128D embedding.
-4. **Verification:** Cosine similarity is computed against the stored encrypted embedding from the SQLite database.
-5. **Trust Scoring:** Concurrent scoring of Device Trust, Behavioral, and Location factors.
-6. **Consensus:** The Consensus Engine assesses the 5 signals.
-7. **Storage:** An AuthRecord is created and stored in the encrypted local database, generating an SHA-256 audit log.
-8. **Sync:** The AuthRecord is pushed to the offline SyncQueue, ready for transmission to the cloud when network conditions permit.
-
-## Performance Benchmarks
-
-## Performance Benchmark Results
-
-**Device:** Android Emulator (android 11)
-**Date:** 6/4/2026
-**Model Size:** 2.10 MB
-
-| Operation                                      | Target | Avg   | P95   | Min  | Max   | Pass Rate | Status  |
-| ---------------------------------------------- | ------ | ----- | ----- | ---- | ----- | --------- | ------- |
-| MobileFaceNet Model Load (cold start)          | 2000ms | 102ms | 115ms | 89ms | 115ms | 100%      | ✅ PASS |
-| MobileFaceNet Inference (embedding generation) | 300ms  | 14ms  | 18ms  | 12ms | 18ms  | 100%      | ✅ PASS |
-| Cosine Similarity Computation                  | 5ms    | 1ms   | 2ms   | 0ms  | 3ms   | 100%      | ✅ PASS |
-| Trust Score Computation (all 5 signals)        | 50ms   | 2ms   | 4ms   | 1ms  | 5ms   | 100%      | ✅ PASS |
-| Haversine Distance Calculation                 | 5ms    | 0ms   | 1ms   | 0ms  | 1ms   | 100%      | ✅ PASS |
-| Behavioral Score Computation                   | 10ms   | 1ms   | 2ms   | 0ms  | 2ms   | 100%      | ✅ PASS |
-| Device Trust Score Computation                 | 5ms    | 1ms   | 2ms   | 0ms  | 3ms   | 100%      | ✅ PASS |
-| Estimated Total Authentication Pipeline        | 1000ms | 96ms  | 115ms | 96ms | 96ms  | 100%      | ✅ PASS |
-
-### Hackathon Compliance
-
-| Criterion             | Target     | Status  |
-| --------------------- | ---------- | ------- |
-| Face Detection        | < 200ms    | ✅ PASS |
-| Face Recognition      | < 300ms    | ✅ PASS |
-| Liveness Verification | < 300ms    | ✅ PASS |
-| Total Authentication  | < 1 second | ✅ PASS |
-| AI Model Size         | < 20 MB    | ✅ PASS |
-
-**Summary:** Benchmark ran 8 operations across 10+ iterations each. 8/8 operations meet performance targets. MobileFaceNet inference: 14ms average (target: <300ms). Total authentication pipeline: ~96ms (target: <1000ms). Model size: 2.1MB (target: <20MB). ALL hackathon performance criteria met. ✅
-
-## Security Architecture
-
-- **Encryption at rest:** AES-256 SQLCipher for the database, AES-256 for embeddings.
-- **Key management:** Handled by Android Keystore System / iOS Secure Enclave via React Native Keychain.
-- **Audit trail:** SHA-256 integrity hashing on every log entry prevents tampering.
-- **No biometric data in transit:** Only aggregate trust scores and decisions are synced; face data never leaves the device.
-
-## Technology Choices
-
-| Component        | Technology             | Why Chosen                                            | Alternative Considered | Why Rejected                       |
-| ---------------- | ---------------------- | ----------------------------------------------------- | ---------------------- | ---------------------------------- |
-| Framework        | React Native CLI       | Cross-platform, existing Datalake 3.0 ecosystem       | Flutter                | Not compatible with Datalake 3.0   |
-| Face Recognition | MobileFaceNet + TFLite | Lightweight (<2MB), 99%+ accuracy on benchmarks, free | AWS Rekognition        | Requires internet, not offline     |
-| Face Detection   | MediaPipe MLKit        | On-device, free, React Native compatible              | Google Vision API      | Requires internet                  |
-| Liveness         | MediaPipe Face Mesh    | Active challenges, works offline, free                | FaceTec                | Commercial, paid                   |
-| Storage          | SQLite + SQLCipher     | Encrypted at rest, React Native native, free          | AsyncStorage           | Not encrypted, no SQL queries      |
-| State            | Zustand v5             | Zero boilerplate, TypeScript first, tiny bundle       | Redux Toolkit          | More boilerplate, larger bundle    |
-| Cloud Sync       | AWS Free Tier          | Free, scalable, SAM deployment                        | Firebase               | Limited free tier for file storage |
+### Synchronization Lifecycle
+1. The `SyncService` monitors the device's `NetInfo` state. When internet connectivity is detected, it automatically invokes `triggerSync()`.
+2. The service queries up to `SYNC_BATCH_SIZE` pending payloads and marks their status as `IN_PROGRESS`.
+3. The batch is dispatched to the AWS backend via HTTPS (TLS 1.3).
+4. **On Success:** 
+   - The server acknowledges the received payloads.
+   - The client marks the corresponding `sync_queue` items as `SYNCED` and updates the local `auth_records.is_synced` flag.
+   - The `purgeSynced()` routine deletes completed payloads to free local storage.
+5. **On Failure:**
+   - The queue items are marked as `FAILED`.
+   - The `retry_count` is incremented.
+   - The payload will be re-attempted during the next connection window until a maximum retry threshold is reached (at which point it is flagged as `ABANDONED`).

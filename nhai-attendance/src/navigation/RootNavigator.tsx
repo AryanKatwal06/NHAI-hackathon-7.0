@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { RootStackParamList } from './types';
 
 // Screens
-import SplashScreen from '@screens/SplashScreen/SplashScreen';
+import { SplashScreen } from '@screens/SplashScreen/SplashScreen';
 import LoginScreen from '@screens/LoginScreen/LoginScreen';
 import EnrollmentScreen from '@screens/EnrollmentScreen/EnrollmentScreen';
 import AuthenticationScreen from '@screens/AuthenticationScreen/AuthenticationScreen';

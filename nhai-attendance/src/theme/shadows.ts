@@ -1,1 +1,3 @@
-export {};
+export interface Shadows {
+  // Implementation pending
+}

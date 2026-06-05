@@ -13,7 +13,7 @@ exports.handler = async () => {
     },
     body: JSON.stringify({
       status: 'OK',
-      service: 'nhai-hackathon-project-sync',
+      service: 'nhai-field attendance-project-sync',
       version: '1.0.0',
       timestamp: new Date().toISOString(),
       region: process.env.AWS_REGION || 'ap-south-1',

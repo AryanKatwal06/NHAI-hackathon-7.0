@@ -38,7 +38,6 @@ export function computeTrustScore(signals: TrustSignals): TrustScoreResult {
     }
   }
 
-  // Compute weighted score
   const weightedScore =
     (signals.faceMatchScore * TRUST_WEIGHTS.FACE_MATCH) / 100 +
     (signals.livenessScore * TRUST_WEIGHTS.LIVENESS) / 100 +
@@ -48,7 +47,6 @@ export function computeTrustScore(signals: TrustSignals): TrustScoreResult {
 
   const roundedScore = Math.round(weightedScore);
 
-  // Determine initial decision from thresholds
   let initialDecision: AuthDecision;
   if (roundedScore >= TRUST_THRESHOLDS.AUTHENTICATED) {
     initialDecision = 'AUTHENTICATED';
@@ -124,10 +122,8 @@ export function generateExplainableResult(trustResult: TrustScoreResult): Explai
     },
   ];
 
-  // Sort contributions descending by weighted contribution for display
   contributions.sort((a, b) => b.weightedContribution - a.weightedContribution);
 
-  // Identify the weakest signal (most likely reason for non-AUTHENTICATED outcomes)
   const weakestSignal = [...contributions].sort((a, b) => a.rawScore - b.rawScore)[0];
 
   let primaryReason: string;

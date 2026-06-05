@@ -29,12 +29,12 @@ describe('Device Trust Verification', () => {
     expect(result.reason).toContain('unrecognized device');
   });
 
-  test('Returns NEW_UNREGISTERED (20) when worker has no history', () => {
+  test('Returns REGISTERED_CONSISTENT (100) when worker has no history (auto-enroll)', () => {
     const registeredHistory: string[] = [];
     const result = computeDeviceTrustScore(currentFingerprint, registeredHistory);
 
-    // First time login on any device is low trust until established
-    expect(result.score).toBe(DEVICE_TRUST_SCORES.NEW_UNREGISTERED);
-    expect(result.reason).toContain('No device registered');
+    // Automatically trust the first device used
+    expect(result.score).toBe(DEVICE_TRUST_SCORES.REGISTERED_CONSISTENT);
+    expect(result.reason).toContain('First device used. Automatically trusted');
   });
 });

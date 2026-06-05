@@ -11,9 +11,12 @@ import { LoadingOverlay } from '@components/common/LoadingOverlay';
 import { GlassCard } from '@components/common/GlassCard/GlassCard';
 import { GradientButton } from '@components/common/GradientButton/GradientButton';
 import { Button } from '@components/common/Button';
+import { CameraView } from '@components/camera/CameraView';
 import { useTheme } from '@theme/ThemeProvider';
 import { useAppAlert } from '@components/common/AppAlertProvider';
 import type { AppNavigationProp, AuthenticationScreenProps } from '@navigation/types';
+import { rs, rf, SCREEN_WIDTH } from '@utils/responsive.utils';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const SIGNAL_LABELS = ['GPS', 'Device', 'Behavior', 'History', 'Config'];
 
@@ -22,6 +25,7 @@ const AuthenticationScreen: React.FC = () => {
   const route = useRoute<AuthenticationScreenProps['route']>();
   const { colors, fontSize, fontWeight, spacing, borderRadius } = useTheme();
   const { showAlert } = useAppAlert();
+  const insets = useSafeAreaInsets();
   const workerEmployeeId = route.params?.workerEmployeeId ?? 'WORKER_001';
 
   const [precomputeStatus, setPrecomputeStatus] = useState<
@@ -91,15 +95,10 @@ const AuthenticationScreen: React.FC = () => {
 
       {/* Camera area (placeholder) */}
       {/* Frame processor integration: vision-camera-plugin-frame-processor-mlkit would
-          enable real-time face detection here. For the prototype, face matching is
+          enable real-time face detection here. For the application, face matching is
           triggered manually — the pipeline logic (AuthenticationService) is identical. */}
       <View style={styles.cameraArea}>
-        <View style={[styles.cameraPlaceholder, { backgroundColor: colors.background.primary }]}>
-          <Text style={{ color: colors.text.tertiary, fontSize: fontSize.lg }}>Camera Preview</Text>
-          <Text style={{ color: colors.text.tertiary, fontSize: fontSize.xs, marginTop: 4 }}>
-            (Camera module requires device build)
-          </Text>
-        </View>
+        <CameraView isActive={true} style={StyleSheet.absoluteFill} />
 
         {/* Dark overlay outside oval */}
         <View style={[styles.overlay, { backgroundColor: colors.overlay.light }]} />
@@ -125,7 +124,7 @@ const AuthenticationScreen: React.FC = () => {
         <View
           style={[
             styles.topHud,
-            { backgroundColor: colors.overlay.dark, borderRadius: borderRadius.full },
+            { backgroundColor: colors.overlay.dark, borderRadius: borderRadius.full, top: insets.top + rs(16) },
           ]}
         >
           <Text
@@ -135,7 +134,7 @@ const AuthenticationScreen: React.FC = () => {
               fontWeight: fontWeight.medium,
             }}
           >
-            NHAI Hackathon
+            Authentication
           </Text>
           <View style={[styles.connectivityDot, { backgroundColor: colors.success }]} />
         </View>
@@ -177,7 +176,7 @@ const AuthenticationScreen: React.FC = () => {
       </View>
 
       {/* Bottom action card */}
-      <GlassCard style={[styles.controls, { backgroundColor: colors.background.glass }]}>
+      <GlassCard style={[styles.controls, { backgroundColor: colors.background.glass, bottom: insets.bottom + rs(24) }]}>
         <View style={styles.statusRow}>
           <View
             style={[
@@ -242,25 +241,35 @@ const AuthenticationScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   cameraArea: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  cameraPlaceholder: { alignItems: 'center' },
+  cameraPlaceholder: { alignItems: 'center', ...StyleSheet.absoluteFillObject },
   overlay: { ...StyleSheet.absoluteFillObject },
-  faceOval: { position: 'absolute', width: 220, height: 280, borderRadius: 110, borderWidth: 3 },
+  faceOval: { 
+    position: 'absolute', 
+    width: SCREEN_WIDTH * 0.72, 
+    height: (SCREEN_WIDTH * 0.72) * 1.35, 
+    borderRadius: SCREEN_WIDTH * 0.36, 
+    borderWidth: 3 
+  },
   topHud: {
     position: 'absolute',
-    top: 50,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    gap: rs(8),
+    paddingHorizontal: rs(16),
+    paddingVertical: rs(8),
   },
-  connectivityDot: { width: 8, height: 8, borderRadius: 4 },
-  signalRow: { flexDirection: 'row', justifyContent: 'space-around' },
-  signalItem: { alignItems: 'center', gap: 4 },
-  signalDot: { width: 10, height: 10, borderRadius: 5 },
-  controls: { margin: 16, borderRadius: 20 },
-  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  statusIndicator: { width: 8, height: 8, borderRadius: 4 },
+  connectivityDot: { width: rs(8), height: rs(8), borderRadius: rs(4) },
+  signalRow: { flexDirection: 'row', justifyContent: 'space-around', flexWrap: 'wrap' },
+  signalItem: { alignItems: 'center', gap: rs(4) },
+  signalDot: { width: rs(10), height: rs(10), borderRadius: rs(5) },
+  controls: { 
+    position: 'absolute', 
+    left: rs(20), 
+    right: rs(20), 
+    borderRadius: rs(20) 
+  },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: rs(8) },
+  statusIndicator: { width: rs(8), height: rs(8), borderRadius: rs(4) },
 });
 
 export default AuthenticationScreen;

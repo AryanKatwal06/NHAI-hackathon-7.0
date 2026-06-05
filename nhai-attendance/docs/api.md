@@ -2,7 +2,7 @@
 
 The NHAI Hackathon framework includes an optional AWS serverless backend designed to receive offline authentication records when the mobile device regains network connectivity.
 
-> **Note:** For the hackathon demonstration, the app runs in `MockSyncService` mode by default, simulating these API calls locally to prove the offline-first sync-and-purge lifecycle without network dependency.
+> **Note:** For the field attendance demonstration, the app runs in `OfflineSyncService` mode by default, simulating these API calls locally to prove the offline-first sync-and-purge lifecycle without network dependency.
 
 ## 1. POST `/sync`
 

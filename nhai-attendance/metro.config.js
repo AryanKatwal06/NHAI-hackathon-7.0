@@ -29,6 +29,13 @@ const config = {
     // Enable Hermes for better performance on Android mid-range devices.
     // Hermes is the default JS engine for RN 0.70+, this makes it explicit.
     hermesParser: true,
+    inlineRequires: true,
+    getTransformOptions: async () => ({
+      transform: {
+        experimentalImportSupport: false,
+        inlineRequires: true,
+      },
+    }),
   },
 };
 

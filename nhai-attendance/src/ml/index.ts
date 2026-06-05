@@ -1,4 +1,4 @@
-// index.ts
-// Barrel export file. Re-exports will be added as implementations are completed.
-
-export {};
+export * from './embeddingUtils';
+export * from './livenessDetection';
+export * from './modelLoader.test';
+export * from './types';

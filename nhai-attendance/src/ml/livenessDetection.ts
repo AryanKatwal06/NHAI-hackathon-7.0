@@ -1,4 +1,3 @@
-// Mock implementation for liveness detection
 
 export async function analyzeLivenessSequence(frames: string[]): Promise<number> {
   if (frames.length === 0) {

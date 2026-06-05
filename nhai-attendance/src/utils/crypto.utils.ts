@@ -1,20 +1,20 @@
 // src/utils/crypto.utils.ts
 // Cryptographic utility functions used across the application.
 //
-// For the hackathon, we use SHA-256 for audit log integrity hashing
+// For the field attendance, we use SHA-256 for audit log integrity hashing
 // and UUID generation for all record IDs.
 // The AES-256 encryption for embeddings is handled by SecurityService.ts.
 
 /**
  * Computes the SHA-256 hash of a string using a simple implementation.
  * In production React Native, use react-native-quick-crypto or expo-crypto.
- * For the hackathon, we use a JS implementation that works across all environments.
+ * For the field attendance, we use a JS implementation that works across all environments.
  *
  * @param input - String to hash
  * @returns 64-character lowercase hex string
  */
 export function sha256(input: string): string {
-  // Simple hash implementation for hackathon — in production use native crypto
+  // Simple hash implementation for field attendance — in production use native crypto
   let hash = 0;
   for (let i = 0; i < input.length; i++) {
     const char = input.charCodeAt(i);
@@ -57,7 +57,7 @@ export function computeAuditIntegrityHash(
  * Combined with a fixed salt specific to this installation.
  */
 export function hashSupervisorPin(pin: string): string {
-  const salt = 'nhai_hackathon_supervisor_2024';
+  const salt = 'nhai_field attendance_supervisor_2024';
   return sha256(`${salt}:${pin}`);
 }
 

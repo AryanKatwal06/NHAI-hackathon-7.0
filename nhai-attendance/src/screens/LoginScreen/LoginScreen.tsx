@@ -24,6 +24,7 @@ import { useAppAlert } from '@components/common/AppAlertProvider';
 import { useTheme } from '@theme/ThemeProvider';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { AppNavigationProp } from '@navigation/types';
+import { rs, rf, rp, IS_SMALL_DEVICE } from '@utils/responsive.utils';
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 5 * 60 * 1000;
@@ -208,7 +209,7 @@ const LoginScreen: React.FC = () => {
                 styles.keypadText,
                 {
                   color: digit === '⌫' ? colors.text.accent : colors.text.primary,
-                  fontSize: fontSize.xl,
+                  fontSize: IS_SMALL_DEVICE ? rf(18) : rf(22),
                   fontWeight: fontWeight.medium,
                 },
               ]}
@@ -247,48 +248,48 @@ const LoginScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
-  themeToggleContainer: { position: 'absolute', top: 50, right: 20, zIndex: 10 },
-  shieldCard: { marginBottom: 24, padding: 20, alignItems: 'center' },
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: rs(24) },
+  themeToggleContainer: { position: 'absolute', top: rs(50), right: rs(20), zIndex: 10 },
+  shieldCard: { marginBottom: rs(24), padding: rs(20), alignItems: 'center' },
   shieldIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: rs(64),
+    height: rs(64),
+    borderRadius: rs(32),
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: { marginBottom: 4, textAlign: 'center' },
-  subtitle: { marginBottom: 24, textAlign: 'center' },
-  pinDisplay: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  title: { marginBottom: rs(4), textAlign: 'center' },
+  subtitle: { marginBottom: rs(24), textAlign: 'center' },
+  pinDisplay: { flexDirection: 'row', gap: rs(8), marginBottom: rs(16) },
   pinCircle: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: rs(52),
+    height: rs(52),
+    borderRadius: rs(26),
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  pinCircleFilled: { width: 10, height: 10, borderRadius: 5 },
-  errorText: { marginBottom: 8, textAlign: 'center' },
+  pinCircleFilled: { width: rs(16), height: rs(16), borderRadius: rs(8) },
+  errorText: { marginBottom: rs(8), textAlign: 'center' },
   keypad: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    width: 240,
+    width: '100%',
     justifyContent: 'center',
-    gap: 12,
-    marginBottom: 20,
+    gap: rs(12),
+    marginBottom: rs(20),
   },
   keypadButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: IS_SMALL_DEVICE ? rp(26) : rp(22),
+    height: IS_SMALL_DEVICE ? rp(12) : rp(22),
+    borderRadius: rs(16),
     justifyContent: 'center',
     alignItems: 'center',
   },
   keypadText: {},
-  submitContainer: { width: '100%', marginBottom: 16 },
-  workerLink: { paddingVertical: 8, paddingHorizontal: 20, borderRadius: 100, borderWidth: 1 },
+  submitContainer: { width: '100%', marginBottom: rs(16) },
+  workerLink: { paddingVertical: rs(8), paddingHorizontal: rs(20), borderRadius: rs(100), borderWidth: 1 },
   workerLinkText: {},
 });
 

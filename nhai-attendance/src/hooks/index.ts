@@ -1,4 +1,13 @@
-// index.ts
-// Barrel export file. Re-exports will be added as implementations are completed.
-
-export {};
+export * from './useAuditLog';
+export * from './useAuthentication';
+export * from './useCamera';
+export * from './useDeviceInfo';
+export * from './useFaceDetection';
+export * from './useFaceRecognition';
+export * from './useLiveness';
+export * from './useLivenessDetection';
+export * from './useLocation';
+export * from './useNetworkState';
+export * from './useNetworkStatus';
+export * from './useSync';
+export * from './useTrustScore';

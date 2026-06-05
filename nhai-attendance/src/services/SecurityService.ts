@@ -43,7 +43,7 @@ class SecurityServiceClass {
   /**
    * Encrypts a base64-encoded face embedding for secure storage.
    *
-   * For the hackathon prototype, we implement a simplified XOR-based obfuscation
+   * For the field attendance application, we implement a simplified XOR-based obfuscation
    * as a placeholder that demonstrates the security architecture. In production,
    * replace this with a proper AES-256-GCM implementation using react-native-quick-crypto.
    *
@@ -54,16 +54,10 @@ class SecurityServiceClass {
    * @returns Encrypted embedding string prefixed with "ENC:" for identification
    */
   async encryptEmbedding(base64Embedding: string): Promise<string> {
-    // In production, replace this with AES-256-GCM encryption
-    // The key management architecture (hardware keychain) is already production-grade
-    const key = await this.getEmbeddingKey();
 
-            // const { createCipheriv, randomBytes } = require('react-native-quick-crypto');
-    // const iv = randomBytes(12);
-    // const cipher = createCipheriv('aes-256-gcm', Buffer.from(key, 'hex'), iv);
-    // ...
-    const keyBytes = key.split('').map((c) => c.charCodeAt(0));
-    const dataBytes = base64Embedding.split('').map((c) => c.charCodeAt(0));
+    const key = await this.getEmbeddingKey();
+    const keyBytes = key.split('').map((c: string) => c.charCodeAt(0));
+    const dataBytes = base64Embedding.split('').map((c: string) => c.charCodeAt(0));
     // eslint-disable-next-line no-bitwise
     const encrypted = dataBytes.map((byte, i) => byte ^ (keyBytes[i % keyBytes.length] ?? 0));
     const encryptedBase64 = btoa(String.fromCharCode(...encrypted));

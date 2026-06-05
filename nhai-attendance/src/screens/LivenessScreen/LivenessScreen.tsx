@@ -17,9 +17,12 @@ import { completePipeline } from '@services/AuthenticationService';
 import { GlassCard } from '@components/common/GlassCard/GlassCard';
 import { GradientButton } from '@components/common/GradientButton/GradientButton';
 import { Button } from '@components/common/Button';
+import { CameraView } from '@components/camera/CameraView';
 import { useTheme } from '@theme/ThemeProvider';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { AppNavigationProp, LivenessScreenProps } from '@navigation/types';
+import { rs, rf, SCREEN_WIDTH } from '@utils/responsive.utils';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ChallengeKey = keyof typeof LIVENESS_CHALLENGES;
 const CHALLENGE_KEYS = Object.keys(LIVENESS_CHALLENGES) as ChallengeKey[];
@@ -35,6 +38,7 @@ const LivenessScreen: React.FC = () => {
   const navigation = useNavigation<AppNavigationProp>();
   const route = useRoute<LivenessScreenProps['route']>();
   const { colors, fontSize, fontWeight, spacing, borderRadius } = useTheme();
+  const insets = useSafeAreaInsets();
   const { workerId, faceMatchScore, pipelineStartTime, precomputedSignals } = route.params;
 
   const [challenges] = useState<ChallengeKey[]>(() => {
@@ -155,10 +159,11 @@ const LivenessScreen: React.FC = () => {
 
       {/* Camera area with face oval */}
       <View style={styles.cameraArea}>
+        <CameraView isActive={!isProcessing} style={StyleSheet.absoluteFill} />
         <View style={[styles.faceOval, { borderColor: colors.faceOverlay.liveness }]} />
 
         {/* Completed checkmarks row */}
-        <View style={styles.checkmarksRow}>
+        <View style={[styles.checkmarksRow, { top: insets.top + rs(60) }]}>
           {challenges.map((_, i) => (
             <View
               key={i}
@@ -188,12 +193,12 @@ const LivenessScreen: React.FC = () => {
       </View>
 
       {/* Challenge instruction card */}
-      <GlassCard style={styles.challengeCard}>
-        <Icon name={config.icon} size={72} color={colors.text.primary} style={{ textAlign: 'center' }} />
+      <GlassCard style={[styles.challengeCard, { width: SCREEN_WIDTH - rs(40), alignSelf: 'center' }]}>
+        <Icon name={config.icon} size={Math.round(SCREEN_WIDTH * 0.14)} color={colors.text.primary} style={{ textAlign: 'center' }} />
         <Text
           style={{
             color: colors.text.primary,
-            fontSize: fontSize.xxl,
+            fontSize: rf(18),
             fontWeight: fontWeight.bold,
             textAlign: 'center',
             marginTop: spacing.sm,
@@ -248,7 +253,7 @@ const LivenessScreen: React.FC = () => {
           />
         </View>
 
-        {/* Demo buttons */}
+
         <View style={{ gap: spacing.sm, marginTop: spacing.lg }}>
           <GradientButton
             label="Challenge Passed"
@@ -273,12 +278,12 @@ const LivenessScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   cameraArea: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#111' },
-  faceOval: { width: 220, height: 280, borderRadius: 110, borderWidth: 3 },
-  checkmarksRow: { position: 'absolute', top: 50, flexDirection: 'row', gap: 12 },
-  checkmark: { width: 28, height: 28, justifyContent: 'center', alignItems: 'center' },
-  challengeCard: { margin: 16, borderRadius: 24 },
-  progressTrack: { height: 6, overflow: 'hidden' },
-  progressFill: { height: 6 },
+  faceOval: { width: SCREEN_WIDTH * 0.72, height: (SCREEN_WIDTH * 0.72) * 1.35, borderRadius: SCREEN_WIDTH * 0.36, borderWidth: 3 },
+  checkmarksRow: { position: 'absolute', flexDirection: 'row', gap: rs(12) },
+  checkmark: { width: rs(28), height: rs(28), justifyContent: 'center', alignItems: 'center' },
+  challengeCard: { margin: rs(16), borderRadius: rs(24) },
+  progressTrack: { height: rs(6), overflow: 'hidden' },
+  progressFill: { height: rs(6) },
   processingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
 

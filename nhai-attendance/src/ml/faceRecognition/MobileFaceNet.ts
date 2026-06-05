@@ -60,7 +60,6 @@ export async function loadMobileFaceNet(): Promise<void> {
   }
 
   if (isLoading) {
-    // Another call is already loading the model — wait for it
     await new Promise<void>((resolve, reject) => {
       const checkInterval = setInterval(() => {
         if (modelInstance !== null) {
@@ -145,7 +144,6 @@ export function preprocessImageForInference(rgbPixels: Uint8Array): Float32Array
   const floatInput = new Float32Array(expectedLength);
 
   for (let i = 0; i < expectedLength; i++) {
-    // Normalize from [0, 255] to [-1.0, +1.0]
     floatInput[i] = (rgbPixels[i] ?? 0) / 128.0 - 1.0;
   }
 
@@ -172,7 +170,7 @@ export async function runFaceEmbeddingInference(
 ): Promise<FaceEmbedding> {
   if (modelInstance === null) {
     throw new Error(
-      'MobileFaceNet model is not loaded. Call loadMobileFaceNet() before running inference.',
+      'MobileFaceNet not loaded — call loadMobileFaceNet() at startup'
     );
   }
 
@@ -185,17 +183,11 @@ export async function runFaceEmbeddingInference(
 
     const rawOutput = outputs[0];
     if (!rawOutput || !(rawOutput instanceof Float32Array)) {
-      throw new Error(
-        'Model output is null or not a Float32Array. The TFLite model may be corrupt ' +
-          'or incompatible with the current version of react-native-fast-tflite.',
-      );
+      throw new Error('Model output is null or not a Float32Array.');
     }
 
     if (rawOutput.length !== FACE_EMBEDDING_DIMENSION) {
-      throw new Error(
-        `Expected model output dimension ${FACE_EMBEDDING_DIMENSION}, got ${rawOutput.length}. ` +
-          'Verify you are using the correct MobileFaceNet variant (192-dim output).',
-      );
+      throw new Error(`Embedding dimension mismatch: expected ${FACE_EMBEDDING_DIMENSION}, got ${rawOutput.length}`);
     }
 
     outputData = rawOutput;

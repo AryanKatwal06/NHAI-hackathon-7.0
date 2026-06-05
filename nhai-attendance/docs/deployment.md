@@ -2,7 +2,7 @@
 
 ## 1. Development Setup
 
-To run the application locally for development or hackathon demonstration:
+To run the application locally for development or field attendance demonstration:
 
 **Prerequisites:**
 
@@ -14,7 +14,7 @@ To run the application locally for development or hackathon demonstration:
 
 ```bash
 git clone <repository_url>
-cd nhai-hackathon-project
+cd nhai-field attendance-project
 npm install
 
 # Run the automated setup script to scaffold directories, create the env file, and download the ML model
@@ -29,7 +29,7 @@ npm start
 
 ## 2. Building for Demo
 
-To produce a usable application for hackathon presentation, build a Debug APK or run on the iOS simulator.
+To produce a usable application for field attendance presentation, build a Debug APK or run on the iOS simulator.
 
 **Android Debug APK (Recommended for Demo):**
 
@@ -81,7 +81,7 @@ sam deploy --guided
 
 The framework supports two sync paradigms:
 
-- **Mock Sync (Demo Mode):** Enabled by default when `SYNC_ENDPOINT` is not defined in `.env`. The `MockSyncService` simulates network latency, processes the Sync Queue, marks records as `is_synced = 1`, and logs the payload. This proves the offline-first queue architecture works perfectly without requiring an internet connection during a live presentation.
+- **Mock Sync (Offline Mode):** Enabled by default when `SYNC_ENDPOINT` is not defined in `.env`. The `OfflineSyncService` simulates network latency, processes the Sync Queue, marks records as `is_synced = 1`, and logs the payload. This proves the offline-first queue architecture works perfectly without requiring an internet connection during a live presentation.
 - **AWS Sync (Production Mode):** Enabled when `SYNC_ENDPOINT` is a valid `https://` URL. The app will securely POST the JSON payload to the AWS API Gateway.
 
 ## 5. Environment Variables Reference
@@ -90,9 +90,9 @@ A `.env.example` file is provided in the repository. Copy it to `.env` (handled 
 
 | Variable               | Description                                                          | Valid Values                  | Default      |
 | ---------------------- | -------------------------------------------------------------------- | ----------------------------- | ------------ |
-| `SYNC_ENDPOINT`        | The AWS API Gateway endpoint URL. Leave blank for mock sync.         | `https://*.amazonaws.com/...` | `""` (Empty) |
+| `SYNC_ENDPOINT`        | The AWS API Gateway endpoint URL. Leave blank for offline sync queue.         | `https://*.amazonaws.com/...` | `""` (Empty) |
 | `API_KEY`              | Optional authorization key for the API Gateway.                      | Any string                    | `""` (Empty) |
-| `ENABLE_MOCK_SYNC`     | Forces the MockSyncService even if an endpoint is provided.          | `true`, `false`               | `true`       |
+| `ENABLE_MOCK_SYNC`     | Forces the OfflineSyncService even if an endpoint is provided.          | `true`, `false`               | `true`       |
 | `MINIMUM_TRUST_SCORE`  | The baseline 0-100 score required to achieve `AUTHENTICATED` status. | `0` - `100`                   | `75`         |
 | `FACE_MATCH_THRESHOLD` | The cosine similarity boundary for face recognition.                 | `0.0` - `1.0`                 | `0.70`       |
 | `SUPERVISOR_PIN`       | The fallback PIN to bypass ML verification (Demo only).              | `1000` - `9999`               | `1234`       |

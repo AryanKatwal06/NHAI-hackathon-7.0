@@ -71,7 +71,7 @@ check "LocationService" "test -f src/services/LocationService.ts"
 check "BehavioralService" "test -f src/services/BehavioralService.ts"
 check "TrustScoreService" "test -f src/services/TrustScoreService.ts"
 check "SyncService" "test -f src/services/SyncService.ts"
-check "MockSyncService" "test -f src/services/MockSyncService.ts"
+check "OfflineSyncService" "test -f src/services/OfflineSyncService.ts"
 check "PurgeService (not stub)" "grep -q 'purgeCompletedSyncRecords' src/services/PurgeService.ts"
 check "AuditService" "test -f src/services/AuditService.ts"
 echo ""
@@ -166,8 +166,8 @@ echo ""
 
 # ── MOCK SYNC ──────────────────────────────────────────────────
 echo "── Mock Sync Fallback ──"
-check "MockSyncService exists" "test -f src/services/MockSyncService.ts"
-check "SyncService imports MockSyncService" "grep -q 'MockSyncService' src/services/SyncService.ts"
+check "OfflineSyncService exists" "test -f src/services/OfflineSyncService.ts"
+check "SyncService imports OfflineSyncService" "grep -q 'OfflineSyncService' src/services/SyncService.ts"
 check "SyncService checks AWS_API_GATEWAY_URL" "grep -q 'USE_REAL_AWS' src/services/SyncService.ts"
 echo ""
 
@@ -184,6 +184,6 @@ if [ $FAIL -eq 0 ]; then
   echo -e "  ${GREEN}★ ALL REQUIRED CHECKS PASSED ★${NC}"
   exit 0
 else
-  echo -e "  ${RED}✗ $FAIL CHECKS FAILED — FIX BEFORE SUBMISSION${NC}"
+  echo -e "  ${RED}✗ $FAIL CHECKS FAILED — FIX BEFORE DEPLOYMENT${NC}"
   exit 1
 fi

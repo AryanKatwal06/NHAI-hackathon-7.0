@@ -21,6 +21,7 @@ import {
 } from '@services/BenchmarkService';
 
 import type { AppNavigationProp } from '@navigation/types';
+import { rs } from '@utils/responsive.utils';
 
 const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<AppNavigationProp>();
@@ -93,6 +94,8 @@ const SettingsScreen: React.FC = () => {
         textTransform: 'uppercase',
         marginBottom: spacing.sm,
         marginTop: spacing.lg,
+        paddingTop: rs(24),
+        paddingHorizontal: rs(16),
       }}
     >
       {title}
@@ -139,7 +142,7 @@ const SettingsScreen: React.FC = () => {
       <SectionHeader title="Appearance" />
       <GlassCard>
         <View
-          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', height: rs(52) }}
         >
           <View>
             <Text
@@ -293,7 +296,7 @@ const SettingsScreen: React.FC = () => {
               marginBottom: spacing.md,
             }}
           >
-            Run the NHAI Phase 4 performance suite to verify target latencies. This takes about 5
+            Run the performance suite to verify target latencies. This takes about 5
             seconds.
           </Text>
 
@@ -382,14 +385,14 @@ const SettingsScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 16, paddingBottom: 40 },
+  content: { padding: rs(16), paddingBottom: rs(40) },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: rs(8),
   },
-  input: { padding: 16, borderWidth: 1 },
+  input: { paddingHorizontal: rs(12), borderWidth: 1, height: rs(48) },
 });
 
 export default SettingsScreen;

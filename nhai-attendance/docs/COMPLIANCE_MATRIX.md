@@ -1,6 +1,6 @@
-# NHAI Hackathon 7.0 — Compliance Matrix
+# NHAI Field Attendance — Compliance Matrix
 
-This document maps the original 12-phase execution plan to the official 4-phase structure and confirms adherence to all critical project constraints as required by the hackathon problem statement.
+This document maps the original 12-phase execution plan to the official 4-phase structure and confirms adherence to all critical project constraints as required by the field attendance problem statement.
 
 ## Phase Mapping
 
@@ -16,8 +16,8 @@ This document maps the original 12-phase execution plan to the official 4-phase 
 | **Phase 8** (Audit & Performance)              | **Phase 3** (Security, Sync, UI, and Testing) | Consolidated            | Managed via AuditService and PerformanceMonitor.          |
 | **Phase 9** (UI Assembly & Navigation)         | **Phase 3** (Security, Sync, UI, and Testing) | Consolidated            | All screens mapped in `src/screens/`.                     |
 | **Phase 10** (Testing & QA)                    | **Phase 3** (Security, Sync, UI, and Testing) | Consolidated            | Detox E2E and Jest unit tests.                            |
-| **Phase 11** (Build & Deployment)              | **Phase 4** (Optimization & Submission)       | Consolidated            | Optimization targets documented for Hackathon submission. |
-| **Phase 12** (Datalake 3.0 Integration)        | **Phase 4** (Optimization & Submission)       | Consolidated            | Integration guide planned for Phase 4 deliverables.       |
+| **Phase 11** (Build & Deployment)              | **Phase 4** (Optimization & Deployment)       | Consolidated            | Optimization targets documented for Hackathon deployment. |
+| **Phase 12** (Datalake 3.0 Integration)        | **Phase 4** (Optimization & Deployment)       | Consolidated            | Integration guide planned for Phase 4 deliverables.       |
 
 ## Constraint Affirmations
 
@@ -39,7 +39,7 @@ The 4-phase structure solely reorganizes the timeline. All features from the ori
 
 ### 5. Mock Sync Satisfies Prototype Requirements
 
-**Confirmed.** The system relies on a local "Mock Sync Mode" to demonstrate the queueing, retrying, and purging behavior offline, satisfying the hackathon's "Scope for sync" requirement.
+**Confirmed.** The system relies on a local "Mock Sync Mode" to demonstrate the queueing, retrying, and purging behavior offline, satisfying the field attendance's "Scope for sync" requirement.
 
 ### 6. Alignment with Problem Statement
 

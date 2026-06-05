@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { SMILE_CONSTANTS } from '@constants/liveness.constants';
 import type { FaceMeshLandmarks } from './types';
+import { MOUTH_LANDMARKS, CHEEK_LANDMARKS } from './types';
 
 /**
  * Computes Mouth Aspect Ratio — the ratio of mouth height to mouth width.

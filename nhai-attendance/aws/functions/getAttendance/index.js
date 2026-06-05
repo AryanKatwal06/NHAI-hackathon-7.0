@@ -9,7 +9,7 @@ const { DynamoDBDocumentClient, QueryCommand } = require('@aws-sdk/lib-dynamodb'
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
-const TABLE_NAME = process.env.DYNAMODB_TABLE || 'nhai-hackathon-project-prod';
+const TABLE_NAME = process.env.DYNAMODB_TABLE || 'nhai-field attendance-project-prod';
 
 exports.handler = async (event) => {
   const corsHeaders = {

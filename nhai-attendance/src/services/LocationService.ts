@@ -57,7 +57,6 @@ export async function acquireCurrentPosition(): Promise<{
   longitude: number;
   accuracy: number;
 }> {
-  // Check permissions first
   if (Platform.OS === 'android') {
     const granted = await PermissionsAndroid.check(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION as Permission,

@@ -80,7 +80,7 @@ Add the `NhaiAttendanceScreens` to the Datalake 3.0 main navigation stack:
 
 ```tsx
 // In Datalake 3.0's root App.tsx or Navigator:
-import { NhaiAttendanceScreens } from 'nhai-hackathon-project-module';
+import { NhaiAttendanceScreens } from 'nhai-field attendance-project-module';
 
 // Add to your Stack.Navigator:
 <Stack.Screen

@@ -1,4 +1,2 @@
-// index.ts
-// Barrel export for the api module.
-
-export {};
+export * from './awsSync';
+export * from './types';

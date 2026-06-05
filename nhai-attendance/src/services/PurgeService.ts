@@ -1,5 +1,4 @@
 /* eslint-disable */
-// PurgeService.ts
 
 import { purgeSynced, getPending } from '@db/repositories/syncQueue.repository';
 import { logEvent } from '@services/AuditService';

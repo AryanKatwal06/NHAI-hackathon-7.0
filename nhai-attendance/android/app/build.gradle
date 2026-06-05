@@ -8,6 +8,9 @@ project.ext.envConfigFiles = [
     anycustombuild: ".env",
 ]
 apply from: "../../node_modules/react-native-config/android/dotenv.gradle"
+project.ext.vectoricons = [
+    iconFontNames: [ 'MaterialCommunityIcons.ttf' ]
+]
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
 /**
@@ -104,6 +107,19 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            if (project.hasProperty('MYAPP_RELEASE_STORE_FILE')) {
+                storeFile file(MYAPP_RELEASE_STORE_FILE)
+                storePassword MYAPP_RELEASE_STORE_PASSWORD
+                keyAlias MYAPP_RELEASE_KEY_ALIAS
+                keyPassword MYAPP_RELEASE_KEY_PASSWORD
+            } else {
+                storeFile file('nhai-release-key.keystore')
+                storePassword 'nhai1234'
+                keyAlias 'nhai-key-alias'
+                keyPassword 'nhai1234'
+            }
+        }
     }
     buildTypes {
         debug {
@@ -112,13 +128,20 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             shrinkResources enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            zipAlignEnabled true
+            ndk {
+                debugSymbolLevel 'NONE'
+            }
         }
     }
     packaging {
+        jniLibs {
+            useLegacyPackaging true
+        }
         pickFirst '**/*.so'
         exclude 'META-INF/DEPENDENCIES'
         exclude 'META-INF/LICENSE'

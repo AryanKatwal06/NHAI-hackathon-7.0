@@ -2,8 +2,8 @@
 // Application-wide constants: version information, build configuration, and feature flags.
 
 // ─── APP IDENTITY ─────────────────────────────────────────────────────────────
-export const APP_NAME = 'NHAI Hackathon';
-export const APP_IDENTIFIER = 'com.nhai.hackathon';
+export const APP_NAME = 'NHAI Field Attendance';
+export const APP_IDENTIFIER = 'com.nhai.fieldattendance';
 export const APP_VERSION = '0.1.0';
 export const APP_BUILD_NUMBER = 1;
 
@@ -19,7 +19,6 @@ export const FEATURE_FLAGS = {
   ENABLE_AUDIT_LOGGING: true,
   ENABLE_PERFORMANCE_MONITORING: true,
   PERFORMANCE_LOGGING: __DEV__, // Enable verbose logging in development builds
-  USE_MOCK_SYNC: true, // Force mock sync mode for Hackathon evaluation
 } as const;
 
 // ─── PERFORMANCE BUDGETS ──────────────────────────────────────────────────────

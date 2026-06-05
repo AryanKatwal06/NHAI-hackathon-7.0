@@ -47,12 +47,12 @@ class PerformanceMonitorClass {
 
     this.records.push(record);
 
-    // Rolling window: remove oldest records when limit reached
+
     if (this.records.length > this.maxRecords) {
       this.records.shift();
     }
 
-    // Log in development mode or when target is exceeded
+
     if (FEATURE_FLAGS.ENABLE_PERFORMANCE_MONITORING || exceededTarget) {
       const status = exceededTarget ? '[EXCEEDED TARGET]' : '[OK]';
       const targetStr = target !== undefined ? ` (target: ${target}ms)` : '';
@@ -80,7 +80,7 @@ class PerformanceMonitorClass {
 
   /**
    * Returns performance statistics for all recorded operations.
-   * Used for the benchmarking report in Phase 4.
+   * Used for the benchmarking report.
    */
   getReport(): Record<
     string,
@@ -125,5 +125,5 @@ class PerformanceMonitorClass {
   }
 }
 
-// Export as singleton
+
 export const PerformanceMonitor = new PerformanceMonitorClass();

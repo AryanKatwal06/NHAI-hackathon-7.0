@@ -22,7 +22,7 @@ export async function logEvent(
   const timestamp = new Date().toISOString();
   const detailsJson = JSON.stringify(details);
 
-  // Compute integrity hash
+
   const hashInput = `${id}${eventType}${timestamp}${detailsJson}`;
   const integrityHash = generateHash(hashInput);
 

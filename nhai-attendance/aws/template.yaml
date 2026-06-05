@@ -3,8 +3,8 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   NHAI Hackathon System — Serverless Sync Backend
   Provides API Gateway + Lambda functions for attendance record sync.
-  This template exists for architecture demonstration and hackathon evaluation.
-  For prototype use, the app runs with MockSyncService (no deployment needed).
+  This template exists for architecture demonstration and field attendance evaluation.
+  For application use, the app runs with OfflineSyncService (no deployment needed).
 
 Globals:
   Function:
@@ -30,7 +30,7 @@ Resources:
   AttendanceApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub nhai-hackathon-project-api-${Stage}
+      Name: !Sub nhai-field attendance-project-api-${Stage}
       StageName: !Ref Stage
       Cors:
         AllowMethods: "'POST,GET,OPTIONS'"
@@ -90,7 +90,7 @@ Resources:
   AttendanceTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub nhai-hackathon-project-${Stage}
+      TableName: !Sub nhai-field attendance-project-${Stage}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: pk

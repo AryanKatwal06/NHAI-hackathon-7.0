@@ -34,7 +34,7 @@ export interface BenchmarkReport {
   results: BenchmarkResult[];
   overallStatus: 'PASS' | 'WARN' | 'FAIL';
   summary: string; // Human-readable summary for documentation
-  hackathonCompliance: {
+  systemCompliance: {
     faceDetectionUnder200ms: boolean;
     faceRecognitionUnder300ms: boolean;
     livenessUnder300ms: boolean;
@@ -148,7 +148,7 @@ import { haversineDistanceMeters } from '@services/LocationService';
 export async function runFullBenchmark(): Promise<BenchmarkReport> {
   const allResults: BenchmarkResult[] = [];
 
-  // ─── BENCHMARK 1: MobileFaceNet Model Cold Load ───────────────────────────
+
   const modelLoadDurations: number[] = [];
   for (let i = 0; i < 3; i++) {
     disposeMobileFaceNet();
@@ -163,7 +163,7 @@ export async function runFullBenchmark(): Promise<BenchmarkReport> {
     await loadMobileFaceNet();
   }
 
-  // ─── BENCHMARK 2: TFLite Inference (Face Embedding Generation) ───────────
+
   const syntheticPixels = generateSyntheticFaceInput();
   const preprocessed = preprocessImageForInference(syntheticPixels);
   const inferenceDurations = await benchmarkOperation(async () => {
@@ -173,7 +173,7 @@ export async function runFullBenchmark(): Promise<BenchmarkReport> {
     computeStats(inferenceDurations, 300, 'FaceNet Inference (embedding generation)'),
   );
 
-  // ─── BENCHMARK 3: Embedding Similarity Computation ───────────────────────
+
   const embA = generateSyntheticEmbedding();
   const embB = generateSyntheticEmbedding();
   const similarityDurations: number[] = [];
@@ -184,7 +184,7 @@ export async function runFullBenchmark(): Promise<BenchmarkReport> {
   }
   allResults.push(computeStats(similarityDurations, 5, 'Cosine Similarity Computation'));
 
-  // ─── BENCHMARK 4: Trust Score Computation ────────────────────────────────
+
   const sampleSignals: TrustSignals = {
     faceMatchScore: 88,
     livenessScore: 95,
@@ -200,7 +200,7 @@ export async function runFullBenchmark(): Promise<BenchmarkReport> {
   }
   allResults.push(computeStats(trustDurations, 50, 'Trust Score Computation (all 5 signals)'));
 
-  // ─── BENCHMARK 5: Location Distance Calculation ──────────────────────────
+
   const locDurations: number[] = [];
   for (let i = 0; i < 100; i++) {
     const start = performance.now();
@@ -209,7 +209,7 @@ export async function runFullBenchmark(): Promise<BenchmarkReport> {
   }
   allResults.push(computeStats(locDurations, 5, 'Haversine Distance Calculation'));
 
-  // ─── BENCHMARK 6: Behavioral Score Computation ───────────────────────────
+
   const sampleHistory = Array.from({ length: 10 }, (_, i) => ({
     timestamp: new Date(Date.now() - i * 86400000).toISOString(),
     wasSuccessful: true,
@@ -222,7 +222,7 @@ export async function runFullBenchmark(): Promise<BenchmarkReport> {
   }
   allResults.push(computeStats(behavDurations, 10, 'Behavioral Score Computation'));
 
-  // ─── BENCHMARK 7: Device Trust Computation ───────────────────────────────
+
   const devDurations: number[] = [];
   for (let i = 0; i < 100; i++) {
     const start = performance.now();
@@ -231,7 +231,7 @@ export async function runFullBenchmark(): Promise<BenchmarkReport> {
   }
   allResults.push(computeStats(devDurations, 5, 'Device Trust Score Computation'));
 
-  // ─── BENCHMARK 8: Estimated Total Authentication Pipeline ─────────────────
+
   const inferenceAvg = allResults.find((r) => r.operationName.includes('Inference'))?.avgMs ?? 0;
   const trustAvg = allResults.find((r) => r.operationName.includes('Trust Score'))?.avgMs ?? 0;
   const estimatedTotal = 30 + inferenceAvg + 30 + trustAvg + 20; // detect + infer + liveness + trust + db
@@ -247,11 +247,11 @@ export async function runFullBenchmark(): Promise<BenchmarkReport> {
     status: estimatedTotal < 1000 ? 'PASS' : estimatedTotal < 1500 ? 'WARN' : 'FAIL',
   });
 
-  // ─── MODEL SIZE ───────────────────────────────────────────────────────────
+
   // Update this with actual measured size from: wc -c src/assets/models/facenet.tflite
   const MODEL_SIZE_BYTES = 2097152; // Assuming ~2MB for quantized model
 
-  // ─── COMPILE REPORT ──────────────────────────────────────────────────────
+
   const allPass = allResults.every((r) => r.status === 'PASS' || r.status === 'WARN');
   const anyFail = allResults.some((r) => r.status === 'FAIL');
   const overallStatus: 'PASS' | 'WARN' | 'FAIL' = anyFail ? 'FAIL' : allPass ? 'PASS' : 'WARN';
@@ -259,7 +259,7 @@ export async function runFullBenchmark(): Promise<BenchmarkReport> {
   const inferenceResult = allResults.find((r) => r.operationName.includes('Inference'));
   const totalResult = allResults.find((r) => r.operationName.includes('Total'));
 
-  const hackathonCompliance = {
+  const systemCompliance = {
     faceDetectionUnder200ms: 30 < 200, // MediaPipe detection is typically 20–50ms
     faceRecognitionUnder300ms: (inferenceResult?.avgMs ?? 999) < 300,
     livenessUnder300ms: true, // Challenge detection per-frame is < 10ms
@@ -267,8 +267,8 @@ export async function runFullBenchmark(): Promise<BenchmarkReport> {
     modelUnder20mb: MODEL_SIZE_BYTES < 20_000_000,
     allCriteriaMet: false,
   };
-  hackathonCompliance.allCriteriaMet = Object.values(hackathonCompliance)
-    .filter((_, k) => k < Object.keys(hackathonCompliance).length - 1)
+  systemCompliance.allCriteriaMet = Object.values(systemCompliance)
+    .filter((_, k) => k < Object.keys(systemCompliance).length - 1)
     .every((v) => v === true);
 
   const passCount = allResults.filter((r) => r.status === 'PASS').length;
@@ -278,8 +278,8 @@ export async function runFullBenchmark(): Promise<BenchmarkReport> {
     `FaceNet inference: ${inferenceResult?.avgMs ?? 'N/A'}ms average (target: <300ms).`,
     `Total authentication pipeline: ~${totalResult?.avgMs ?? 'N/A'}ms (target: <1000ms).`,
     `Model size: ${(MODEL_SIZE_BYTES / 1_000_000).toFixed(1)}MB (target: <20MB).`,
-    hackathonCompliance.allCriteriaMet
-      ? 'ALL hackathon performance criteria met.'
+    systemCompliance.allCriteriaMet
+      ? 'ALL field attendance performance criteria met.'
       : 'Some criteria need optimization. See individual results for details.',
   ].join(' ');
 
@@ -292,7 +292,7 @@ export async function runFullBenchmark(): Promise<BenchmarkReport> {
     results: allResults,
     overallStatus,
     summary,
-    hackathonCompliance,
+    systemCompliance,
   };
 }
 
@@ -320,15 +320,15 @@ export function formatBenchmarkAsMarkdown(report: BenchmarkReport): string {
 |-----------|--------|-----|-----|-----|-----|-----------|--------|
 ${rows}
 
-### Hackathon Compliance
+### System Compliance
 
 | Criterion | Target | Status |
 |-----------|--------|--------|
-| Face Detection | < 200ms | ${report.hackathonCompliance.faceDetectionUnder200ms ? 'PASS' : 'FAIL'} |
-| Face Recognition | < 300ms | ${report.hackathonCompliance.faceRecognitionUnder300ms ? 'PASS' : 'FAIL'} |
-| Liveness Verification | < 300ms | ${report.hackathonCompliance.livenessUnder300ms ? 'PASS' : 'FAIL'} |
-| Total Authentication | < 1 second | ${report.hackathonCompliance.totalAuthUnder1s ? 'PASS' : 'FAIL'} |
-| AI Model Size | < 20 MB | ${report.hackathonCompliance.modelUnder20mb ? 'PASS' : 'FAIL'} |
+| Face Detection | < 200ms | ${report.systemCompliance.faceDetectionUnder200ms ? 'PASS' : 'FAIL'} |
+| Face Recognition | < 300ms | ${report.systemCompliance.faceRecognitionUnder300ms ? 'PASS' : 'FAIL'} |
+| Liveness Verification | < 300ms | ${report.systemCompliance.livenessUnder300ms ? 'PASS' : 'FAIL'} |
+| Total Authentication | < 1 second | ${report.systemCompliance.totalAuthUnder1s ? 'PASS' : 'FAIL'} |
+| AI Model Size | < 20 MB | ${report.systemCompliance.modelUnder20mb ? 'PASS' : 'FAIL'} |
 
 **Summary:** ${report.summary}
   `.trim();

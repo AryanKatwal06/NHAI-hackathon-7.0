@@ -28,6 +28,7 @@ import { formatRelativeTime } from '@utils/formatting.utils';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { AppNavigationProp } from '@navigation/types';
 import type { AuthenticationAttempt } from '@/types/auth.types';
+import { rs } from '@utils/responsive.utils';
 
 const SupervisorDashboard: React.FC = () => {
   const navigation = useNavigation<AppNavigationProp>();
@@ -77,7 +78,7 @@ const SupervisorDashboard: React.FC = () => {
   }, [loadData]);
 
   const renderItem = ({ item }: { item: AuthenticationAttempt }) => (
-    <GlassCard style={{ marginBottom: spacing.sm }}>
+    <GlassCard style={{ marginBottom: spacing.sm, minHeight: rs(72) }}>
       <View style={styles.recordHeader}>
         <View style={{ flex: 1 }}>
           <Text
@@ -93,7 +94,7 @@ const SupervisorDashboard: React.FC = () => {
             {item.attemptedAt ? formatRelativeTime(item.attemptedAt) : 'Unknown time'}
           </Text>
         </View>
-        <View style={{ alignItems: 'flex-end', gap: 4 }}>
+        <View style={{ alignItems: 'flex-end', gap: rs(4) }}>
           <StatusBadge decision={item.trustResult.decision} size="small" />
           <View
             style={[
@@ -134,7 +135,7 @@ const SupervisorDashboard: React.FC = () => {
       return { text: 'All synced', color: colors.success, bg: `${colors.success}15` };
     }
     return {
-      text: `Demo mode — ${pendingSyncCount} pending`,
+      text: `Offline mode — ${pendingSyncCount} pending`,
       color: colors.signal.liveness,
       bg: `${colors.signal.liveness}15`,
     };
@@ -293,19 +294,19 @@ const SupervisorDashboard: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  container: { flex: 1, padding: rs(16) },
+  header: { flexDirection: 'row', alignItems: 'center', marginBottom: rs(16) },
   iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: rs(36),
+    height: rs(36),
+    borderRadius: rs(18),
     justifyContent: 'center',
     alignItems: 'center',
   },
-  statsRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  syncBanner: { padding: 12, alignItems: 'center', marginTop: 12 },
-  recordHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  scoreBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 100 },
+  statsRow: { flexDirection: 'row', gap: rs(8), marginBottom: rs(16) },
+  syncBanner: { padding: rs(12), alignItems: 'center', marginTop: rs(12) },
+  recordHeader: { flexDirection: 'row', alignItems: 'center', gap: rs(12) },
+  scoreBadge: { paddingHorizontal: rs(8), paddingVertical: rs(2), borderRadius: rs(100) },
 });
 
 export default SupervisorDashboard;

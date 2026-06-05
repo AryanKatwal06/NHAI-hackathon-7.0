@@ -6,6 +6,7 @@ import { PerformanceMonitor } from './PerformanceMonitor';
 import { getDeviceFingerprintsForWorker } from '@db/repositories/devices.repository';
 import { getLoginHistory } from '@db/repositories/behaviorHistory.repository';
 import { createAuthRecord } from '@db/repositories/authRecords.repository';
+import { findWorkerByEmployeeId, createWorker } from '@db/repositories/workers.repository';
 import { enqueue } from '@db/repositories/syncQueue.repository';
 import { logEvent } from '@db/repositories/auditLogs.repository';
 import { useSettingsStore } from '@store/settingsStore';
@@ -47,14 +48,12 @@ export async function precomputeBackgroundSignals(
       getDeviceFingerprintsForWorker(workerId),
     ]);
 
-  // Extract device trust
   const deviceFingerprint =
     deviceFingerprintResult.status === 'fulfilled' ? deviceFingerprintResult.value : 'unknown';
   const registeredFingerprints =
     registeredDevicesResult.status === 'fulfilled' ? registeredDevicesResult.value : [];
   const deviceTrust = computeDeviceTrustScore(deviceFingerprint, registeredFingerprints);
 
-  // Extract location trust
   let locationScore = 10; // Default low score if GPS fails
   let gpsLatitude: number | undefined;
   let gpsLongitude: number | undefined;
@@ -104,16 +103,26 @@ export async function completePipeline(
   precomputed: PipelinePrecomputedSignals,
   pipelineStartTime: number,
 ): Promise<{ trustResult: TrustScoreResult; explainable: ExplainableAuthResult }> {
-  // Compute behavioral score
-  const loginHistory = await getLoginHistory(workerId, 30);
+  // Ensure worker exists to satisfy SQLite foreign key constraints
+  let worker = await findWorkerByEmployeeId(workerId);
   const worksite = useSettingsStore.getState().worksite;
+  if (!worker) {
+    worker = await createWorker({
+      employeeId: workerId,
+      name: 'Auto-Enrolled Worker',
+      designation: 'Engineer',
+      worksiteId: worksite?.id ?? 'default_worksite',
+    });
+  }
+  const dbWorkerId = worker.id;
+
+  const loginHistory = await getLoginHistory(dbWorkerId, 30);
   const behavioralResult = computeBehavioralScore(
     new Date().toISOString(),
     loginHistory,
     worksite?.shiftStartHour ?? 8.0,
   );
 
-  // Assemble all five signals
   const signals: TrustSignals = {
     faceMatchScore,
     livenessScore,
@@ -122,19 +131,16 @@ export async function completePipeline(
     locationScore: precomputed.locationScore,
   };
 
-  // Compute trust score and explainable result
   const trustResult = computeTrustScore(signals);
   const explainable = generateExplainableResult(trustResult);
 
-  // Record total pipeline time
   const totalPipelineMs = performance.now() - pipelineStartTime;
   PerformanceMonitor.record('total_authentication', totalPipelineMs);
 
-  // Persist the authentication record
   const attemptId = uuidv4();
   const attempt: AuthenticationAttempt = {
     id: attemptId,
-    workerId,
+    workerId: dbWorkerId,
     worksiteId: worksite?.id ?? 'unknown',
     deviceId: precomputed.deviceFingerprint,
     trustResult,
@@ -150,7 +156,7 @@ export async function completePipeline(
   // Enqueue for AWS sync (only non-biometric payload)
   const syncPayload: SyncPayload = {
     authAttemptId: attemptId,
-    workerId,
+    workerId: dbWorkerId,
     worksiteId: attempt.worksiteId,
     deviceId: precomputed.deviceFingerprint,
     trustScore: trustResult.weightedScore,
@@ -167,7 +173,6 @@ export async function completePipeline(
   };
   await enqueue(attemptId, syncPayload);
 
-  // Audit log
   await logEvent(
     'AUTH_ATTEMPT_COMPLETED',
     precomputed.deviceFingerprint,
@@ -177,7 +182,7 @@ export async function completePipeline(
       signals,
       pipelineMs: totalPipelineMs,
     },
-    workerId,
+    dbWorkerId,
     attempt.worksiteId,
   );
 

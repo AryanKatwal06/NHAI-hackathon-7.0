@@ -32,7 +32,7 @@ const EVENT_TYPE_CONFIG: Record<string, { icon: string; category: string }> = {
   AUTH_FAILED: { icon: 'close-circle-outline', category: 'Auth' },
   SYNC_STARTED: { icon: 'cloud-upload-outline', category: 'Sync' },
   SYNC_COMPLETED: { icon: 'cloud-check-outline', category: 'Sync' },
-  SYNC_FAILED: { icon: 'cloud-alert-outline', category: 'Sync' },
+  SYNC_FAILED: { icon: 'cloud-alert', category: 'Sync' },
   PURGE_COMPLETED: { icon: 'trash-can-outline', category: 'Sync' },
   ENROLLMENT: { icon: 'account-plus-outline', category: 'Enrollment' },
   SECURITY_EVENT: { icon: 'shield-alert-outline', category: 'Security' },

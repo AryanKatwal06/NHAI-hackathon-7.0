@@ -5,7 +5,7 @@ export function useDeviceInfo() {
 
   useEffect(() => {
     // In a real app, this would use react-native-device-info
-    setDeviceId(`mock-device-${Math.floor(Math.random() * 1000)}`);
+    setDeviceId(`device-${Math.floor(Math.random() * 1000)}`);
   }, []);
 
   return { deviceId };

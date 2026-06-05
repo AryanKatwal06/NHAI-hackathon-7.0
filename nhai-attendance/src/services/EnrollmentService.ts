@@ -52,7 +52,6 @@ export async function processEnrollmentFrame(
     return { accepted: false, quality: quality.score, totalCaptured: enrollmentFrames.length };
   }
 
-  // Run inference on this frame
   const preprocessed = preprocessImageForInference(rgbPixels);
   const embedding = await runFaceEmbeddingInference(preprocessed);
 
@@ -77,27 +76,19 @@ export async function processEnrollmentFrame(
  */
 export async function finalizeEnrollment(workerInput: WorkerEnrollmentInput): Promise<string> {
   if (enrollmentFrames.length < 3) {
-    throw new Error(
-      `Insufficient enrollment frames: ${enrollmentFrames.length} captured, minimum 3 required. ` +
-        'Ensure adequate lighting and that the worker faces the camera directly.',
-    );
+    throw new Error(`Insufficient enrollment frames: ${enrollmentFrames.length} captured, minimum 3 required.`);
   }
 
-  // Average all captured embeddings into one representative embedding
   const averagedEmbedding = averageEmbeddings(enrollmentFrames);
 
-  // Encrypt the embedding before storage
   const encryptedEmbedding = await SecurityService.encryptEmbedding(
     embeddingToBase64(averagedEmbedding),
   );
 
-  // Create worker record
   const worker = await createWorker(workerInput);
 
-  // Store the encrypted embedding
   await updateWorkerFaceEmbedding(worker.id, encryptedEmbedding, '1.0.0-mobilefacenet-int8');
 
-  // Register the enrollment device as primary
   const deviceFingerprint = await getCurrentDeviceFingerprint();
   await registerDevice(
     worker.id,
@@ -107,7 +98,6 @@ export async function finalizeEnrollment(workerInput: WorkerEnrollmentInput): Pr
     true, // isPrimary = true for enrollment device
   );
 
-  // Audit log
   await logEvent(
     'ENROLLMENT_COMPLETED',
     deviceFingerprint,
@@ -116,7 +106,6 @@ export async function finalizeEnrollment(workerInput: WorkerEnrollmentInput): Pr
     workerInput.worksiteId,
   );
 
-  // Clear frames
   clearEnrollmentFrames();
 
   return worker.id;

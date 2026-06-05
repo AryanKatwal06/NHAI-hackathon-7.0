@@ -16,6 +16,7 @@ import { useTheme } from '@theme/ThemeProvider';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { AppNavigationProp, ResultsScreenProps } from '@navigation/types';
 import type { } from '@/types/trust.types';
+import { rs, SCREEN_WIDTH } from '@utils/responsive.utils';
 
 const DECISION_ICONS: Record<string, string> = {
   AUTHENTICATED: 'check-circle-outline',
@@ -188,12 +189,12 @@ const ResultsScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 20, gap: 20 },
-  ringContainer: { alignItems: 'center', paddingVertical: 20 },
-  verdictCard: { borderRadius: 20 },
-  verdictRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  reason: { marginTop: 4 },
-  actions: { gap: 10, marginTop: 8 },
+  content: { paddingHorizontal: rs(16), paddingVertical: rs(20), gap: rs(20) },
+  ringContainer: { alignItems: 'center', paddingVertical: rs(20) },
+  verdictCard: { borderRadius: rs(20), marginHorizontal: 0 },
+  verdictRow: { flexDirection: 'row', alignItems: 'center', gap: rs(16) },
+  reason: { marginTop: rs(4) },
+  actions: { gap: rs(10), marginTop: rs(8) },
 });
 
 export default ResultsScreen;

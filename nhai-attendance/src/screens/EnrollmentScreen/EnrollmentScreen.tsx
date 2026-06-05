@@ -9,10 +9,13 @@ import { ROUTES } from '@constants/navigation.constants';
 import { GlassCard } from '@components/common/GlassCard/GlassCard';
 import { GradientButton } from '@components/common/GradientButton/GradientButton';
 import { Button } from '@components/common/Button';
+import { CameraView } from '@components/camera/CameraView';
 import { useTheme } from '@theme/ThemeProvider';
 import { useAppAlert } from '@components/common/AppAlertProvider';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { AppNavigationProp } from '@navigation/types';
+import { rs, rf, rp, SCREEN_WIDTH } from '@utils/responsive.utils';
+import { KeyboardAvoidingView, Platform as RNPlatform } from 'react-native';
 
 type EnrollStep = 'DETAILS' | 'PHOTO_CAPTURE' | 'PROCESSING' | 'COMPLETE';
 const STEPS: EnrollStep[] = ['DETAILS', 'PHOTO_CAPTURE', 'PROCESSING', 'COMPLETE'];
@@ -130,7 +133,11 @@ const EnrollmentScreen: React.FC = () => {
 
       {/* Step 1: Details */}
       {step === 'DETAILS' && (
-        <GlassCard>
+        <KeyboardAvoidingView 
+          behavior={RNPlatform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ width: '100%' }}
+        >
+          <GlassCard>
           <Text
             style={{
               color: colors.text.primary,
@@ -242,6 +249,7 @@ const EnrollmentScreen: React.FC = () => {
             />
           </View>
         </GlassCard>
+        </KeyboardAvoidingView>
       )}
 
       {/* Step 2: Photo capture */}
@@ -260,17 +268,12 @@ const EnrollmentScreen: React.FC = () => {
           <View
             style={[
               styles.cameraPlaceholder,
-              { backgroundColor: colors.background.tertiary, borderRadius: borderRadius.lg },
+              { backgroundColor: colors.background.tertiary, borderRadius: borderRadius.lg, overflow: 'hidden' },
             ]}
           >
-            <Text style={{ color: colors.text.tertiary, fontSize: fontSize.lg }}>
-              Camera Preview
-            </Text>
-            <Text style={{ color: colors.text.tertiary, fontSize: fontSize.xs, marginTop: 4 }}>
-              Position face within the oval
-            </Text>
+            <CameraView isActive={step === 'PHOTO_CAPTURE'} style={StyleSheet.absoluteFill} />
             {/* Capture progress ring */}
-            <View style={styles.captureProgress}>
+            <View style={[styles.captureProgress, { position: 'absolute', bottom: rs(16), backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: rs(12), paddingVertical: rs(4), borderRadius: rs(16) }]}>
               <Text
                 style={{
                   color: colors.text.accent,
@@ -389,35 +392,37 @@ const EnrollmentScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 20, gap: 20 },
+  content: { padding: rs(20), gap: rs(20) },
   stepsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'flex-start',
-    gap: 4,
+    gap: rs(4),
   },
   stepItem: { alignItems: 'center', flex: 1 },
   stepCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: rs(28),
+    height: rs(28),
+    borderRadius: rs(14),
     justifyContent: 'center',
     alignItems: 'center',
   },
-  stepLine: { position: 'absolute', top: 14, left: '65%', width: '70%', height: 2 },
-  input: { padding: 16, borderWidth: 1 },
+  stepLine: { position: 'absolute', top: rs(14), left: '65%', width: '70%', height: rs(2) },
+  input: { padding: rs(16), borderWidth: 1, width: '100%' },
   cameraPlaceholder: {
-    height: 280,
+    width: SCREEN_WIDTH * 0.72,
+    aspectRatio: 1 / 1.35,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: rs(8),
+    alignSelf: 'center',
   },
-  captureProgress: { marginTop: 16 },
-  completeContainer: { alignItems: 'center', paddingVertical: 20 },
+  captureProgress: { marginTop: rs(16) },
+  completeContainer: { alignItems: 'center', paddingVertical: rs(20) },
   successCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: rs(80),
+    height: rs(80),
+    borderRadius: rs(40),
     justifyContent: 'center',
     alignItems: 'center',
   },

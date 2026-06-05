@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { HEAD_TURN_CONSTANTS } from '@constants/liveness.constants';
 import type { FaceMeshLandmarks } from './types';
+import { HEAD_POSE_LANDMARKS } from './types';
 
 /**
  * Estimates head yaw angle in degrees from Face Mesh landmarks.

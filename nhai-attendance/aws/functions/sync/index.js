@@ -3,7 +3,7 @@
  * Lambda function: Receives batch sync payloads from mobile devices.
  * Stores attendance records in DynamoDB.
  *
- * For hackathon prototype, the app uses MockSyncService instead of this Lambda.
+ * For field attendance application, the app uses OfflineSyncService instead of this Lambda.
  * This code demonstrates the production architecture.
  */
 
@@ -12,7 +12,7 @@ const { DynamoDBDocumentClient, BatchWriteCommand } = require('@aws-sdk/lib-dyna
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
-const TABLE_NAME = process.env.DYNAMODB_TABLE || 'nhai-hackathon-project-prod';
+const TABLE_NAME = process.env.DYNAMODB_TABLE || 'nhai-field attendance-project-prod';
 
 exports.handler = async (event) => {
   const corsHeaders = {

@@ -45,7 +45,6 @@ export function analyzeSignalConsensus(
     };
   }
 
-  // Count how many NON-FACE signals are below the LOW_TRUST threshold
   const nonFaceSignals: Array<{ name: string; score: number }> = [
     { name: 'Liveness', score: signals.livenessScore },
     { name: 'Device', score: signals.deviceTrustScore },
@@ -62,7 +61,6 @@ export function analyzeSignalConsensus(
       `${lowTrustSignals.length} low-trust signals: ${lowSignalNames}. ` +
       'Automatic supervisor review triggered.';
 
-    // Downgrade AUTHENTICATED → FLAGGED when contradiction detected
     const adjustedDecision: AuthDecision =
       originalDecision === 'AUTHENTICATED' ? 'FLAGGED' : originalDecision;
 

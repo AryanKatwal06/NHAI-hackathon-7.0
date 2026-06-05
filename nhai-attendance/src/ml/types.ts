@@ -1,4 +1,3 @@
-// types.ts
-// Shared type definitions for ML pipeline inputs and outputs.
-
-export {};
+export interface Types {
+  // Implementation pending
+}

@@ -1,8 +1,8 @@
 {
-  "name": "nhai-hackathon-project",
+  "name": "nhai",
   "version": "0.1.0",
   "private": true,
-  "description": "NHAI Hackathon 7.0 — Offline Multi-Signal Identity Verification Framework",
+  "description": "NHAI Field Attendance — Offline Multi-Signal Identity Verification Framework",
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
@@ -43,7 +43,7 @@
     "react-native-fast-tflite": "^1.3.1",
     "react-native-geolocation-service": "^5.3.1",
     "react-native-gesture-handler": "^2.19.0",
-    "react-native-get-random-values": "^2.0.0",
+    "react-native-get-random-values": "^1.11.0",
     "react-native-keychain": "^9.1.0",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-permissions": "^4.1.0",

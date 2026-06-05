@@ -1,303 +1,239 @@
-// SplashScreen.tsx — Cinematic animated splash screen shown on app startup.
-// Features: gradient background, animated logo ring, signal dots, progress bar.
-// Auto-navigates to Login after initialization.
-
-import React, { useEffect, useRef } from 'react';
-import { View, Text, Animated, StyleSheet, StatusBar, Easing } from 'react-native';
+import React, { useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  StatusBar,
+  Platform,
+  Image,
+} from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+  withSequence,
+  withSpring,
+  Easing,
+  runOnJS,
+} from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { ROUTES } from '@constants/navigation.constants';
-import { useTheme } from '@theme/ThemeProvider';
 import type { AppNavigationProp } from '@navigation/types';
 
-const SplashScreen: React.FC = () => {
-  const navigation = useNavigation<AppNavigationProp>();
-  const { colors, fontSize, fontWeight } = useTheme();
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.5)).current;
-  const spinAnim = useRef(new Animated.Value(0)).current;
-  const progressAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const dotAnims = useRef([0, 1, 2, 3, 4].map(() => new Animated.Value(0.3))).current;
+// Badge dimensions scale relative to screen width
+// On a 360px wide phone: badge = 96px
+// On a 414px wide phone: badge = 110px
+// This ensures the badge never feels too small or too dominant
+const BADGE_SIZE = Math.round(SCREEN_WIDTH * 0.267);
+const BADGE_RING_SIZE = BADGE_SIZE + 20;
+
+export const SplashScreen: React.FC = () => {
+  const navigation = useNavigation<AppNavigationProp>();
+
+  // Animation shared values
+  const badgeOpacity    = useSharedValue(0);
+  const badgeScale      = useSharedValue(0.88);
+  const textOpacity     = useSharedValue(0);
+  const textTranslateY  = useSharedValue(8);
+  const taglineOpacity  = useSharedValue(0);
+  const exitOpacity     = useSharedValue(1);
+
+  const navigateToLogin = (): void => {
+    (navigation as any).replace(ROUTES.LOGIN);
+  };
 
   useEffect(() => {
-    // Main entrance animations
-    Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
-      Animated.spring(scaleAnim, { toValue: 1, friction: 5, tension: 40, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 800, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      Animated.loop(
-        Animated.timing(spinAnim, {
-          toValue: 1,
-          duration: 4000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-      ),
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1.15, duration: 1200, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1, duration: 1200, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        ])
-      ),
-      Animated.timing(progressAnim, {
-        toValue: 1,
-        duration: 2500,
-        easing: Easing.inOut(Easing.cubic),
-        useNativeDriver: false, // width cannot use native driver
-      }),
-    ]).start();
+    StatusBar.setBarStyle('light-content');
+    if (Platform.OS === 'android') {
+      StatusBar.setBackgroundColor('#070B14');
+    }
 
-    // Sequential signal dot pulses
-    const dotSequence = dotAnims.map((dot, i) =>
-      Animated.sequence([
-        Animated.delay(400 + i * 150),
-        Animated.loop(
-          Animated.sequence([
-            Animated.timing(dot, { toValue: 1, duration: 500, useNativeDriver: true }),
-            Animated.timing(dot, { toValue: 0.3, duration: 500, useNativeDriver: true }),
-          ]),
-        ),
-      ]),
-    );
-    Animated.parallel(dotSequence).start();
+    // Badge entrance
+    badgeOpacity.value = withTiming(1, {
+      duration: 500,
+      easing: Easing.out(Easing.cubic),
+    });
+    badgeScale.value = withTiming(1, {
+      duration: 500,
+      easing: Easing.out(Easing.cubic),
+    });
 
-    const timer = setTimeout(() => {
-      navigation.reset({ index: 0, routes: [{ name: ROUTES.LOGIN }] });
-    }, 2800);
+    // Text entrance — slightly delayed
+    textOpacity.value = withDelay(300, withTiming(1, {
+      duration: 400,
+      easing: Easing.out(Easing.quad),
+    }));
+    textTranslateY.value = withDelay(300, withTiming(0, {
+      duration: 400,
+      easing: Easing.out(Easing.quad),
+    }));
 
-    return () => clearTimeout(timer);
-  }, [fadeAnim, scaleAnim, slideAnim, pulseAnim, spinAnim, progressAnim, dotAnims, navigation]);
+    // Tagline fades in last
+    taglineOpacity.value = withDelay(900, withTiming(1, {
+      duration: 400,
+      easing: Easing.out(Easing.quad),
+    }));
 
-  const spin = spinAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
-  const spinReverse = spinAnim.interpolate({ inputRange: [0, 1], outputRange: ['360deg', '0deg'] });
-  const progressWidth = progressAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
-  });
+    // Exit sequence — wait then fade out and navigate
+    const exitTimer = setTimeout(() => {
+      exitOpacity.value = withTiming(0, {
+        duration: 300,
+        easing: Easing.in(Easing.quad),
+      }, (finished) => {
+        if (finished) {
+          runOnJS(navigateToLogin)();
+        }
+      });
+    }, 2200);
 
-  const signalColors = [
-    colors.signal.face,
-    colors.signal.liveness,
-    colors.signal.device,
-    colors.signal.behavioral,
-    colors.signal.location,
-  ];
+    return () => clearTimeout(exitTimer);
+  }, []);
+
+  const badgeStyle = useAnimatedStyle(() => ({
+    opacity: badgeOpacity.value,
+    transform: [{ scale: badgeScale.value }],
+  }));
+
+  const textStyle = useAnimatedStyle(() => ({
+    opacity: textOpacity.value,
+    transform: [{ translateY: textTranslateY.value }],
+  }));
+
+  const taglineStyle = useAnimatedStyle(() => ({
+    opacity: taglineOpacity.value,
+  }));
+
+  const screenStyle = useAnimatedStyle(() => ({
+    opacity: exitOpacity.value,
+  }));
 
   return (
-    <LinearGradient
-      colors={[colors.background.primary, colors.background.tertiary, colors.background.primary]}
-      style={styles.container}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+    <Animated.View style={[styles.container, screenStyle]}>
+      <LinearGradient
+        colors={['#0E1420', '#070B14']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
 
-      {/* Animated Background Glow */}
-      <Animated.View style={[styles.backgroundGlow, { opacity: fadeAnim, transform: [{ scale: pulseAnim }], backgroundColor: colors.brand.primary }]} />
-
-      {/* Animated Logo Container */}
-      <Animated.View
-        style={[styles.logoContainer, { opacity: fadeAnim, transform: [{ scale: scaleAnim }, { translateY: slideAnim }] }]}
-      >
-        {/* Outer Ring */}
-        <Animated.View
-          style={[
-            styles.logoRingOuter,
-            {
-              borderColor: colors.trust.authenticated,
-              borderTopColor: colors.brand.primary,
-              borderBottomColor: colors.brand.secondary,
-              transform: [{ rotate: spin }],
-            },
-          ]}
-        />
-        {/* Inner Ring (Reverse Spin) */}
-        <Animated.View
-          style={[
-            styles.logoRingInner,
-            {
-              borderColor: colors.brand.teal,
-              borderLeftColor: colors.transparent,
-              borderRightColor: colors.transparent,
-              transform: [{ rotate: spinReverse }],
-            },
-          ]}
-        />
-        
-        {/* Center Badge */}
-        <Animated.View style={[styles.logoBadge, { backgroundColor: colors.background.elevated, borderColor: colors.border.light, shadowColor: colors.brand.primary }]}>
-          <LinearGradient
-            colors={[colors.background.elevated, colors.background.tertiary]}
-            style={styles.badgeGradient}
-          >
-            <Text
-              style={[
-                styles.logoText,
-                { color: colors.text.primary, fontSize: fontSize.xxl, fontWeight: fontWeight.bold },
-              ]}
-              numberOfLines={1}
-              adjustsFontSizeToFit={true}
-            >
-              NHAI
-            </Text>
-          </LinearGradient>
-        </Animated.View>
-      </Animated.View>
-
-      {/* Title & Subtitle */}
-      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }], alignItems: 'center' }}>
-        <Text
-          style={[
-            styles.title,
-            { color: colors.text.primary, fontSize: fontSize.xxxl, fontWeight: fontWeight.bold },
-          ]}
-        >
-          NHAI
-        </Text>
-        <Text style={[styles.subtitle, { color: colors.text.accent, fontSize: fontSize.lg, fontWeight: fontWeight.medium }]}>
-          Attendance System
-        </Text>
-      </Animated.View>
-
-      {/* Signal Dots Row */}
-      <Animated.View style={[styles.dotsContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-        {signalColors.map((color, i) => (
-          <Animated.View
-            key={i}
-            style={[styles.signalDot, { backgroundColor: color, opacity: dotAnims[i], shadowColor: color }]}
-          />
-        ))}
-      </Animated.View>
-
-      {/* Tagline */}
-      <Animated.Text
-        style={[
-          styles.tagline,
-          { opacity: fadeAnim, color: colors.text.secondary, fontSize: fontSize.sm, fontWeight: fontWeight.medium },
-        ]}
-      >
-        Multi-Signal Trust Authentication
-      </Animated.Text>
-
-      {/* Version badge */}
-      <Animated.View
-        style={[
-          styles.versionBadge,
-          { opacity: fadeAnim, backgroundColor: colors.overlay.medium, borderColor: colors.border.default },
-        ]}
-      >
-        <Text style={[styles.versionText, { color: colors.text.tertiary, fontSize: fontSize.xs }]}>
-          Hackathon 7.0 · Offline AI · v1.0.0
-        </Text>
-      </Animated.View>
-
-      {/* Progress bar (Floating) */}
-      <Animated.View style={[styles.progressContainer, { opacity: fadeAnim }]}>
-        <View style={[styles.progressTrack, { backgroundColor: colors.overlay.dark }]}>
-          <Animated.View style={[styles.progressFill, { width: progressWidth }]}>
-            <LinearGradient
-              colors={colors.gradients.primary}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.progressGradient}
+      <View style={styles.content}>
+        {/* Badge */}
+        <Animated.View style={[styles.badgeWrapper, badgeStyle]}>
+          {/* Main badge circle for the logo */}
+          <View style={[styles.badge, {
+            width: BADGE_SIZE * 1.5,
+            height: BADGE_SIZE * 1.5,
+            borderRadius: (BADGE_SIZE * 1.5) / 2,
+            backgroundColor: '#FFFFFF',
+          }]}>
+            <Image
+              source={require('../../../National_Highways_Authority_of_India_(NHAI).png')}
+              style={{ width: BADGE_SIZE * 1.2, height: BADGE_SIZE * 1.2, resizeMode: 'contain' }}
             />
-          </Animated.View>
-        </View>
+          </View>
+        </Animated.View>
+
+        {/* App name and subtitle */}
+        <Animated.View style={[styles.textBlock, textStyle]}>
+          <Text style={styles.nhaiText}>NHAI</Text>
+          <Text style={styles.appName}>Field Attendance System</Text>
+          <Text style={styles.orgName}>National Highways Authority of India</Text>
+        </Animated.View>
+      </View>
+
+      {/* Bottom tagline */}
+      <Animated.View style={[styles.bottomBlock, taglineStyle]}>
+        <View style={styles.bottomDivider} />
+        <Text style={styles.tagline}>
+          Powered by Offline AI  ·  Secure  ·  Encrypted
+        </Text>
       </Animated.View>
-    </LinearGradient>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  backgroundGlow: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    opacity: 0.15,
+  container: {
+    flex: 1,
+    backgroundColor: '#070B14',
   },
-  logoContainer: { alignItems: 'center', justifyContent: 'center', marginBottom: 40, width: 140, height: 140 },
-  logoRingOuter: {
-    position: 'absolute',
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-  },
-  logoRingInner: {
-    position: 'absolute',
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    borderWidth: 3,
-  },
-  logoBadge: {
-    width: 86,
-    height: 86,
-    borderRadius: 43,
-    borderWidth: 1,
-    justifyContent: 'center',
+  content: {
+    flex: 1,
     alignItems: 'center',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 10,
-    overflow: 'hidden',
-  },
-  badgeGradient: {
-    width: '100%',
-    height: '100%',
     justifyContent: 'center',
+    paddingBottom: SCREEN_HEIGHT * 0.06,
+  },
+  badgeWrapper: {
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SCREEN_HEIGHT * 0.04,
   },
-  logoText: { letterSpacing: 2, textAlign: 'center' },
-  title: { letterSpacing: 6, textAlign: 'center', textTransform: 'uppercase' },
-  subtitle: { textAlign: 'center', marginTop: 8, letterSpacing: 1 },
-  dotsContainer: { 
-    flexDirection: 'row', 
-    gap: 16, 
-    marginTop: 36,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 30,
-    backgroundColor: 'rgba(13, 15, 26, 0.4)',
+  badgeRing: {
+    position: 'absolute',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'transparent',
   },
-  signalDot: { 
-    width: 10, 
-    height: 10, 
-    borderRadius: 5,
+  badge: {
+    backgroundColor: '#111827',
+    borderWidth: 1,
+    borderColor: 'rgba(65, 88, 208, 0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    // Subtle inner glow via shadow
+    shadowColor: '#4158D0',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
   },
-  tagline: { position: 'absolute', bottom: 120, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 1 },
-  versionBadge: {
-    position: 'absolute',
-    bottom: 80,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
+  nhaiText: {
+    fontSize: Math.round(SCREEN_WIDTH * 0.08),
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 2,
+    textAlign: 'center',
+    marginBottom: 4,
   },
-  versionText: { letterSpacing: 0.5 },
-  progressContainer: {
-    position: 'absolute',
-    bottom: 40,
-    width: '75%',
-    height: 6,
+  textBlock: {
     alignItems: 'center',
+    gap: 6,
   },
-  progressTrack: { width: '100%', height: 6, borderRadius: 3, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 3 },
-  progressGradient: { flex: 1 },
+  appName: {
+    fontSize: Math.round(SCREEN_WIDTH * 0.046),
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.85)',
+    letterSpacing: 0.5,
+    textAlign: 'center',
+  },
+  orgName: {
+    fontSize: Math.round(SCREEN_WIDTH * 0.028),
+    fontWeight: '400',
+    color: 'rgba(255,255,255,0.38)',
+    letterSpacing: 0.3,
+    textAlign: 'center',
+    paddingHorizontal: SCREEN_WIDTH * 0.08,
+  },
+  bottomBlock: {
+    alignItems: 'center',
+    paddingBottom: SCREEN_HEIGHT * 0.055,
+    gap: 12,
+  },
+  bottomDivider: {
+    width: SCREEN_WIDTH * 0.3,
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  tagline: {
+    fontSize: Math.round(SCREEN_WIDTH * 0.025),
+    color: 'rgba(255,255,255,0.22)',
+    letterSpacing: 0.4,
+    textAlign: 'center',
+  },
 });
-
-export default SplashScreen;

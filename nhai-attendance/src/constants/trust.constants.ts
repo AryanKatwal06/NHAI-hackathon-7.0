@@ -53,8 +53,8 @@ export const DEVICE_TRUST_SCORES = {
 // ─── BEHAVIORAL SCORE BOUNDARIES ─────────────────────────────────────────────
 // Time window (in minutes) within which a login is considered "on-time"
 export const BEHAVIORAL_CONSTANTS = {
-  ON_TIME_WINDOW_MINUTES: 30, // ±30 min from typical login time = HIGH score
-  LATE_WINDOW_MINUTES: 90, // ±90 min from typical login time = MEDIUM score
+  ON_TIME_WINDOW_MINUTES: 30, // ±30 min
+  LATE_WINDOW_MINUTES: 90, // ±90 min
   // Beyond LATE_WINDOW_MINUTES = LOW score
   MINIMUM_HISTORY_DAYS: 3, // Minimum days of history before personal baseline is used
   // Below MINIMUM_HISTORY_DAYS = population baseline fallback is used

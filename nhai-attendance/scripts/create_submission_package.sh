@@ -1,14 +1,14 @@
 #!/bin/bash
 set -e
 
-echo "Creating NHAI Hackathon Hackathon Submission Package..."
+echo "Creating NHAI Hackathon Hackathon Deployment Package..."
 
 SUBMISSION_DIR="submission_package"
 mkdir -p "$SUBMISSION_DIR"
 
 # 1. Source code (zip the entire project without node_modules, build outputs)
 echo "Packaging source code..."
-tar -czf "$SUBMISSION_DIR/nhai_hackathon_source_code.tar.gz" \
+tar -czf "$SUBMISSION_DIR/nhai_field attendance_source_code.tar.gz" \
   --exclude="node_modules" \
   --exclude="android/build" \
   --exclude="android/.gradle" \
@@ -27,7 +27,7 @@ elif [ -f "android/app/build/outputs/apk/debug/app-debug.apk" ]; then
   cp android/app/build/outputs/apk/debug/app-debug.apk "$SUBMISSION_DIR/"
   echo "Debug APK included (release APK preferred)"
 else
-  echo "WARNING: No APK found. Build the APK before submission."
+  echo "WARNING: No APK found. Build the APK before deployment."
 fi
 
 # 3. Documentation
@@ -47,13 +47,13 @@ cp docs/DEMO_SCRIPT.md          "$SUBMISSION_DIR/presentation/"
 
 echo ""
 echo "═══════════════════════════════════════════════════════"
-echo "Submission package created: $SUBMISSION_DIR/"
+echo "Deployment package created: $SUBMISSION_DIR/"
 echo ""
 echo "Contents:"
 ls -lh "$SUBMISSION_DIR/"
 echo ""
 echo "Next steps:"
 echo "1. Build your PowerPoint from presentation/SLIDES_TEMPLATE.md"
-echo "2. Add it to the submission package as presentation/NHAI_Attendance_Presentation.pptx"
-echo "3. Upload to the hackathon portal"
+echo "2. Add it to the deployment package as presentation/NHAI_Attendance_Presentation.pptx"
+echo "3. Upload to the field attendance portal"
 echo "═══════════════════════════════════════════════════════"

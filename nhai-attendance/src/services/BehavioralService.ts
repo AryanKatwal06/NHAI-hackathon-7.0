@@ -65,7 +65,6 @@ export function computeBehavioralScore(
   const currentTime = new Date(currentAttemptTime);
   const currentHour = timeToDecimalHours(currentTime);
 
-  // Determine whether to use personal history or population baseline
   const successfulLogins = loginHistory.filter((h) => h.wasSuccessful);
   const usePersonalHistory = successfulLogins.length >= BEHAVIORAL_CONSTANTS.MINIMUM_HISTORY_DAYS;
 

@@ -6,8 +6,9 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@theme/ThemeProvider';
 import type { AuthDecision } from '@/types/trust.types';
+import { rs, rf, SCREEN_WIDTH } from '@utils/responsive.utils';
 
-const RING_SIZE = 180;
+const RING_SIZE = SCREEN_WIDTH * 0.46;
 
 interface TrustScoreRingProps {
   score: number;
@@ -42,11 +43,11 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 10,
+    borderWidth: rs(10),
     borderRadius: RING_SIZE / 2,
     backgroundColor: 'rgba(255,255,255,0.02)',
   },
   scoreContainer: { alignItems: 'center' },
-  scoreNumber: { fontSize: 52, fontWeight: '800', lineHeight: 56 },
-  scoreLabel: { fontSize: 14, color: 'rgba(255,255,255,0.4)' },
+  scoreNumber: { fontSize: rf(52), fontWeight: '800', lineHeight: rf(56) },
+  scoreLabel: { fontSize: rf(14), color: 'rgba(255,255,255,0.4)' },
 });

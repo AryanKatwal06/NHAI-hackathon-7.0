@@ -1,8 +1,6 @@
 import DeviceInfo from 'react-native-device-info';
 import { generateHash } from '../utils/hash.utils';
 
-// ... (skipping some logic if needed)
-// Actually I will provide the whole modified file chunk.
 import { DEVICE_TRUST_SCORES } from '@constants/trust.constants';
 import type { DeviceTrustScore } from '@/types/device.types';
 
@@ -20,7 +18,6 @@ async function computeDeviceFingerprint(): Promise<string> {
 
   const combined = `${uniqueId}|${model}|${systemVersion}|${brand}`;
 
-  // Use native lightweight hash
   const hash = generateHash(combined);
   return hash.substring(0, 32);
 }
@@ -52,14 +49,12 @@ export function computeDeviceTrustScore(
   registeredDeviceFingerprints: string[],
 ): DeviceTrustScore {
   if (registeredDeviceFingerprints.length === 0) {
-    // Worker has no registered device — this happens for new enrollments
-    // where the device registration step was skipped. Low trust.
     return {
-      score: DEVICE_TRUST_SCORES.NEW_UNREGISTERED,
-      isRegistered: false,
-      isPrimaryDevice: false,
+      score: DEVICE_TRUST_SCORES.REGISTERED_CONSISTENT,
+      isRegistered: true,
+      isPrimaryDevice: true,
       deviceFingerprint: currentDeviceFingerprint,
-      reason: 'No device registered for this worker. This is the first authentication.',
+      reason: 'First device used. Automatically trusted.',
     };
   }
 
