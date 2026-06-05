@@ -159,29 +159,50 @@ This system asks: *"Given everything we can observe — is it genuine?"*
 
 ## Environment Variables
 
-Copy `.env.example` to `.env.development`.
+Copy `.env.example` to `.env.development` or `.env`.
 
 ```env
 # Geofencing
-WORKSITE_LATITUDE=28.6139
-WORKSITE_LONGITUDE=77.2090
-GEOFENCE_RADIUS_METERS=500
+DEFAULT_WORKSITE_LATITUDE=28.6139
+DEFAULT_WORKSITE_LONGITUDE=77.2090
+WORKSITE_RADIUS_HIGH_METERS=5000000
+WORKSITE_RADIUS_MEDIUM_METERS=10000000
 
-# Security Configuration
-REQUIRE_LIVENESS=true
-MIN_TRUST_SCORE=80
+# Security Configuration & Thresholds
+TRUST_THRESHOLD_AUTHENTICATED=80
+TRUST_THRESHOLD_FLAGGED=60
+FACE_MATCH_THRESHOLD=0.65
 
-# Cloud Sync (Leave blank for Mock/Demo mode)
-AWS_API_GATEWAY_URL=
+# Signal Weights
+WEIGHT_FACE_MATCH=40
+WEIGHT_LIVENESS=25
+WEIGHT_DEVICE_TRUST=15
+WEIGHT_BEHAVIORAL=10
+WEIGHT_LOCATION=10
+
+# Liveness Configuration
+LIVENESS_CHALLENGE_COUNT=2
+LIVENESS_CHALLENGE_TIMEOUT_MS=8000
+
+# Cloud Sync & AWS
+AWS_REGION=ap-south-1
+USE_MOCK_SYNC=true
+
+# Database & App Config
+DB_NAME=nhai_attendance.db
+APP_ENV=development
+ENABLE_VERBOSE_LOGGING=true
 ```
 
 | Variable | Purpose | Notes |
 |---|---|---|
-| `WORKSITE_LATITUDE` | Site GPS Center | required |
-| `GEOFENCE_RADIUS_METERS`| Acceptable scan radius | default `500` |
-| `REQUIRE_LIVENESS` | Enforce 3D mesh challenges | default `true` |
-| `MIN_TRUST_SCORE` | Threshold for Authentication | default `80` |
-| `AWS_API_GATEWAY_URL` | Endpoint for AWS syncing | Enables Production mode |
+| `DEFAULT_WORKSITE_LATITUDE` | Site GPS Center | required |
+| `WORKSITE_RADIUS_HIGH_METERS`| Acceptable high scan radius | default `5000000` |
+| `TRUST_THRESHOLD_AUTHENTICATED` | Threshold for Authentication | default `80` |
+| `WEIGHT_FACE_MATCH` | Face match signal weight | default `40` |
+| `USE_MOCK_SYNC` | Enables mock sync locally | default `true` |
+| `LIVENESS_CHALLENGE_COUNT` | Number of liveness challenges | default `2` |
+| `APP_ENV` | Application environment | `development` / `production` |
 
 ---
 
@@ -202,6 +223,16 @@ bash scripts/setup.sh
 # Download the required MobileFaceNet TFLite models
 bash scripts/download-models.sh
 ```
+
+**Important Setup & Running Notes:**
+> [!IMPORTANT]
+> **Supervisor Login:** The default login password for the supervisor dashboard is **`1234`**.
+> 
+> **Sign Up & Setup:** When running the app for the first time, you will need to sign up a worker (register their face, device, and location) before testing the attendance verification flow. Ensure you grant Camera and Location permissions when prompted.
+> 
+> **Location Mocking:** If running on an Android Emulator, make sure to manually set the location in the emulator's extended controls to match your worksite coordinates, otherwise the location signal will fail.
+> 
+> **Metro Bundler:** Sometimes the Metro cache can cause issues. If you face unexpected behavior, start the bundler with `npm start -- --reset-cache`.
 
 **Run Local Environment**
 ```bash
